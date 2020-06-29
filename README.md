@@ -62,5 +62,27 @@ func main() {
 }
 ```
 
+## The Big Picture
+![design](./docs/images/file_storage_overview.png)
+
+![design](./docs/images/location_offset_overview.png)
+
+
+## Benmark test
+```sh
+$ go test -bench=. -benchtime=3s -run=^$
+```
+
+```property
+goos: linux
+goarch: amd64
+pkg: github.com/bigqueue
+Benchmark_EnqueueOnly-8                  2319403              1479 ns/op
+Benchmark_DequeueOnly-8                  4704715               743 ns/op
+Benchmark_EnqueueDequeue-8               1536244              2303 ns/op
+Benchmark_ParallelEnqueueDequeue-8       1254315              2760 ns/op
+PASS
+ok      github.com/bigqueue     40.028s
+```
 ## License
 BigQueue-Go is [Apache 2.0 licensed](./LICENSE).
