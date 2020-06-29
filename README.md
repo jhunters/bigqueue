@@ -17,7 +17,7 @@ BigQueue-go is pure Golang implementation for big, fast and persistent queue bas
 
 ## Quick Start
 
-### Installing
+### Installing 
 
 To start using BigQueue-Go, install Go and run `go get`:
 
