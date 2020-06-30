@@ -17,6 +17,7 @@ func main() {
 		GcLock:            false,
 		IndexItemsPerPage: bigqueue.DefaultIndexItemsPerPage,
 	}
+
 	// open queue files
 	err := queue.Open("./bin", "testqueue", DefaultOptions)
 

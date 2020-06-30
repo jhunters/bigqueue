@@ -91,3 +91,18 @@ func GetFiles(pathname string) (*list.List, error) {
 	}
 	return files, err
 }
+
+func RemoveFiles(pathname string) error {
+	list, err := GetFiles(pathname)
+	if err != nil {
+		return err
+	}
+	for i := list.Front(); i != nil; i = i.Next() {
+		fn := fmt.Sprintf("%v", i.Value)
+		err = os.Remove(pathname + "/" + fn)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}

@@ -2,7 +2,6 @@ package bigqueue
 
 import (
 	"fmt"
-	"os"
 	"testing"
 )
 
@@ -18,7 +17,7 @@ import (
 func Benchmark_EnqueueOnly(b *testing.B) {
 
 	path := Tempfile()
-	defer os.RemoveAll(path)
+	defer clearFiles(path, "testqueue")
 
 	var queue = new(FileQueue)
 
@@ -42,7 +41,7 @@ func Benchmark_EnqueueOnly(b *testing.B) {
 func Benchmark_DequeueOnly(b *testing.B) {
 
 	path := Tempfile()
-	defer os.RemoveAll(path)
+	defer clearFiles(path, "testqueue")
 
 	var queue = new(FileQueue)
 
@@ -68,7 +67,7 @@ func Benchmark_DequeueOnly(b *testing.B) {
 func Benchmark_EnqueueDequeue(b *testing.B) {
 
 	path := Tempfile()
-	defer os.RemoveAll(path)
+	defer clearFiles(path, "testqueue")
 
 	var queue = new(FileQueue)
 
@@ -91,7 +90,7 @@ func Benchmark_EnqueueDequeue(b *testing.B) {
 
 func Benchmark_ParallelEnqueueDequeue(b *testing.B) {
 	path := Tempfile()
-	defer os.RemoveAll(path)
+	defer clearFiles(path, "testqueue")
 
 	var queue = new(FileQueue)
 

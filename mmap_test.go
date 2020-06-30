@@ -7,7 +7,7 @@ import (
 )
 
 func Test_MmapWriteAt(t *testing.T) {
-	path := Tempfile()
+	path := Tempfile() + "/test.dat"
 	defer os.Remove(path)
 
 	db := &DB{
@@ -34,7 +34,7 @@ func Test_MmapWriteAt(t *testing.T) {
 }
 
 func Test_MmapWriteAt1(t *testing.T) {
-	path := Tempfile()
+	path := Tempfile() + "/test.dat"
 	defer os.Remove(path)
 	db := &DB{
 		path:            path,

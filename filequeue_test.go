@@ -2,14 +2,13 @@ package bigqueue
 
 import (
 	"fmt"
-	"os"
 	"strings"
 	"testing"
 )
 
 func TestFileQueue_OpenError(t *testing.T) {
 	path := Tempfile()
-	defer os.RemoveAll(path)
+	defer clearFiles(path, "testqueue")
 	var queue = &FileQueue{
 		HeadIndex: 0,
 		TailIndex: 0,
@@ -31,7 +30,7 @@ func TestFileQueue_OpenError(t *testing.T) {
 
 func TestFileQueue_Open(t *testing.T) {
 	path := Tempfile()
-	defer os.RemoveAll(path)
+	defer clearFiles(path, "testqueue")
 
 	var queue = new(FileQueue)
 
@@ -55,7 +54,7 @@ func TestFileQueue_Open(t *testing.T) {
 
 func TestFileQueue_Enqueue(t *testing.T) {
 	path := Tempfile()
-	defer os.RemoveAll(path)
+	defer clearFiles(path, "testqueue")
 
 	var queue = new(FileQueue)
 	err := queue.Open(path, "testqueue", nil)
@@ -70,7 +69,7 @@ func TestFileQueue_Enqueue(t *testing.T) {
 
 func TestFileQueue_DequeueEmpty(t *testing.T) {
 	path := Tempfile()
-	defer os.RemoveAll(path)
+	defer clearFiles(path, "testqueue")
 
 	var queue = new(FileQueue)
 
@@ -87,7 +86,7 @@ func TestFileQueue_DequeueEmpty(t *testing.T) {
 
 func TestFileQueue_EnqueueDequeue(t *testing.T) {
 	path := Tempfile()
-	defer os.RemoveAll(path)
+	defer clearFiles(path, "testqueue")
 
 	var queue = new(FileQueue)
 
@@ -108,7 +107,7 @@ func TestFileQueue_EnqueueDequeue(t *testing.T) {
 
 func TestFileQueue_Skip(t *testing.T) {
 	path := Tempfile()
-	defer os.RemoveAll(path)
+	defer clearFiles(path, "testqueue")
 
 	var queue = new(FileQueue)
 
@@ -131,7 +130,7 @@ func TestFileQueue_Skip(t *testing.T) {
 
 func TestFileQueue_Peek(t *testing.T) {
 	path := Tempfile()
-	defer os.RemoveAll(path)
+	defer clearFiles(path, "testqueue")
 
 	var queue = new(FileQueue)
 
@@ -168,7 +167,7 @@ func TestFileQueue_Peek(t *testing.T) {
 
 // tempfile returns a temporary file path.
 func Tempfile() string {
-	return "./bin/temp/test"
+	return "./bin/temp"
 }
 
 func enqueue(queue Queue, content []byte, size int, t *testing.T) {
@@ -227,4 +226,11 @@ func dequeueEmpty(queue Queue, t *testing.T) {
 	if idx != -1 {
 		t.Error("Empty queue dequeue index must return -1, but actually is ", idx)
 	}
+}
+
+func clearFiles(path string, queueName string) {
+	RemoveFiles(path + "/" + queueName + "/" + DataFileName)
+	RemoveFiles(path + "/" + queueName + "/" + FrontFileName)
+	RemoveFiles(path + "/" + queueName + "/" + IndexFileName)
+	RemoveFiles(path + "/" + queueName + "/" + MetaFileName)
 }
