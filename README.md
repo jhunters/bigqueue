@@ -5,10 +5,11 @@ BigQueue-go is pure Golang implementation for big, fast and persistent queue bas
 [BigQueue](https://github.com/bulldog2011/bigqueue)
 </p>
 
-
+[![Go Report Card](https://goreportcard.com/badge/github.com/jhunters/bigqueue?style=flat-square)](https://goreportcard.com/report/github.com/jhunters/bigqueue)
 [![Build Status](https://travis-ci.org/jhunters/bigqueue.svg?branch=master)](https://travis-ci.org/jhunters/bigqueue)
 [![codecov](https://codecov.io/gh/jhunters/bigqueue/branch/master/graph/badge.svg)](https://codecov.io/gh/jhunters/bigqueue)
 [![Releases](https://img.shields.io/github/release/jhunters/bigqueue/all.svg?style=flat-square)](https://github.com/jhunters/bigqueue/releases)
+[![Godoc](http://img.shields.io/badge/go-documentation-blue.svg?style=flat-square)](https://godoc.org/github.com/jhunters/bigqueue)
 [![LICENSE](https://img.shields.io/github/license/jhunters/bigqueue.svg?style=flat-square)](https://github.com/jhunters/bigqueue/blob/master/LICENSE)
 
 ## Feature Highlight:  
