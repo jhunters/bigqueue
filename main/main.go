@@ -16,12 +16,13 @@ func main() {
 		GcLock:            false,
 		IndexItemsPerPage: bigqueue.DefaultIndexItemsPerPage,
 	}
-
+	// open queue files
 	err := queue.Open("./bin", "testqueue", DefaultOptions)
 
 	if err != nil {
 		fmt.Println(err)
 	}
+	defer queue.Close()
 	for i := 1; i < 10; i++ {
 		data := []byte("hello xiemalin" + strconv.Itoa(i))
 		i, err := queue.Enqueue(data)
@@ -43,8 +44,7 @@ func main() {
 
 	}
 
+	// do gc action to free old data
 	queue.Gc()
-
-	queue.Close()
 
 }
