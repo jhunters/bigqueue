@@ -23,6 +23,8 @@ func main() {
 		fmt.Println(err)
 	}
 	defer queue.Close()
+
+	// do enqueue
 	for i := 1; i < 10; i++ {
 		data := []byte("hello xiemalin" + strconv.Itoa(i))
 		i, err := queue.Enqueue(data)
@@ -32,7 +34,7 @@ func main() {
 			fmt.Println("Enqueued index=", i, string(data))
 		}
 	}
-	//
+	// do dequeue
 	for i := 1; i < 10; i++ {
 		index, bb, err := queue.Dequeue()
 		if err != nil {
