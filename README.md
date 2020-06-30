@@ -23,7 +23,7 @@ BigQueue-go is pure Golang implementation for big, fast and persistent queue bas
 To start using BigQueue-Go, install Go and run `go get`:
 
 ```sh
-$ go get github.com/bigqueue
+$ go get github.com/jhunters/bigqueue
 ```
 
 ### Importing bigqueue
@@ -32,7 +32,7 @@ To use bigqueue as an file implements queue, import as:
 
 ```go
 
-import	"github.com/bigqueue"
+import	"github.com/jhunters/bigqueue"
 
 func main() {
 	var queue = new(bigqueue.FileQueue)
