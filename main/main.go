@@ -22,7 +22,7 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 	}
-	for i := 1; i < 2; i++ {
+	for i := 1; i < 10; i++ {
 		data := []byte("hello xiemalin" + strconv.Itoa(i))
 		i, err := queue.Enqueue(data)
 		if err != nil {
@@ -32,7 +32,7 @@ func main() {
 		}
 	}
 	//
-	for i := 1; i < 2; i++ {
+	for i := 1; i < 10; i++ {
 		index, bb, err := queue.Dequeue()
 		if err != nil {
 			fmt.Println(err)
