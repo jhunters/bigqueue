@@ -2,7 +2,6 @@ package bigqueue
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strings"
 	"testing"
@@ -169,17 +168,7 @@ func TestFileQueue_Peek(t *testing.T) {
 
 // tempfile returns a temporary file path.
 func Tempfile() string {
-	f, err := ioutil.TempFile("", "bigqueue-")
-	if err != nil {
-		panic(err)
-	}
-	if err := f.Close(); err != nil {
-		panic(err)
-	}
-	if err := os.Remove(f.Name()); err != nil {
-		panic(err)
-	}
-	return f.Name()
+	return "./bin/temp/test"
 }
 
 func enqueue(queue Queue, content []byte, size int, t *testing.T) {
