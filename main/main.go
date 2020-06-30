@@ -11,6 +11,7 @@ import (
 func main() {
 	var queue = new(bigqueue.FileQueue)
 
+	// use custom options
 	var DefaultOptions = &bigqueue.Options{
 		DataPageSize:      bigqueue.DefaultDataPageSize,
 		GcLock:            false,
