@@ -24,4 +24,7 @@ type Queue interface {
 	Skip(count int64) error
 
 	Close() error
+
+	// Delete all used data files to free disk space.
+	Gc() error
 }

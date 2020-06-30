@@ -35,6 +35,7 @@ const (
 	fileSuffix = ".dat"
 )
 
+// default options
 var DefaultOptions = &Options{
 	DataPageSize:      DefaultDataPageSize,
 	indexPageSize:     defaultIndexPageSize,
@@ -68,7 +69,7 @@ type FileQueue struct {
 	// lock for enqueue state management
 	enqueueLock sync.Mutex
 
-	// locks for queue front write management					S
+	// locks for queue front write management
 	queueFrontWriteLock sync.Mutex
 
 	path string
@@ -78,9 +79,11 @@ type FileQueue struct {
 	metaFile  *DB
 	frontFile *DB
 
+	// queue options
 	options *Options
 }
 
+// Open the queue files
 func (q *FileQueue) Open(dir string, queueName string, options *Options) error {
 	if len(dir) == 0 {
 		return errors.New("parameter 'dir' can not be blank.")
@@ -94,7 +97,7 @@ func (q *FileQueue) Open(dir string, queueName string, options *Options) error {
 		options = DefaultOptions
 	}
 	q.options = options
-	q.options.itemsPerPage = 1 << q.options.IndexItemsPerPage
+	q.options.itemsPerPage = 1 << uint(q.options.IndexItemsPerPage)
 	q.options.indexPageSize = defaultIndexItemLen * q.options.itemsPerPage
 
 	path := dir + "/" + queueName
@@ -147,10 +150,12 @@ func (q *FileQueue) Open(dir string, queueName string, options *Options) error {
 	return nil
 }
 
+// Determines whether a queue is empty
 func (q *FileQueue) IsEmpty() bool {
 	return q.FrontIndex >= q.HeadIndex
 }
 
+// Total number of items available in the queue.
 func (q *FileQueue) Size() int64 {
 	sz := q.HeadIndex - q.FrontIndex
 	if sz < 0 {
@@ -159,6 +164,8 @@ func (q *FileQueue) Size() int64 {
 	return int64(sz)
 }
 
+// Adds an item at the queue and HeadIndex will increase
+// Asynchouous mode will call back with fn function
 func (q *FileQueue) EnqueueAsync(data []byte, fn func(int64, error)) {
 	go q.doEnqueueAsync(data, fn)
 }
@@ -168,6 +175,7 @@ func (q *FileQueue) doEnqueueAsync(data []byte, fn func(int64, error)) {
 	fn(index, err)
 }
 
+// Adds an item at the queue and HeadIndex will increase
 func (q *FileQueue) Enqueue(data []byte) (int64, error) {
 	sz := len(data)
 	if sz == 0 {
@@ -200,7 +208,7 @@ func (q *FileQueue) Enqueue(data []byte) (int64, error) {
 	q.headDataItemOffset = q.headDataItemOffset + int64(sz)
 
 	toAppendArrayIndex := q.HeadIndex
-	toAppendIndexPageIndex := toAppendArrayIndex >> q.options.IndexItemsPerPage
+	toAppendIndexPageIndex := toAppendArrayIndex >> uint(q.options.IndexItemsPerPage)
 
 	indexDB, err := q.indexFile.acquireDB(toAppendIndexPageIndex)
 	if err != nil {
@@ -235,6 +243,7 @@ func (q *FileQueue) Enqueue(data []byte) (int64, error) {
 	return toAppendArrayIndex, nil
 }
 
+// Retrieves and removes the front of a queue
 func (q *FileQueue) Dequeue() (int64, []byte, error) {
 
 	if q.IsEmpty() {
@@ -250,6 +259,8 @@ func (q *FileQueue) Dequeue() (int64, []byte, error) {
 	return index, bb, err
 }
 
+// Retrieves the item at the front of a queue
+// if item exist return with index id, item data
 func (q *FileQueue) Peek() (int64, []byte, error) {
 	if q.IsEmpty() {
 		return -1, nil, nil
@@ -407,7 +418,7 @@ func (q *FileQueue) initDataPageIndex() error {
 
 func (q *FileQueue) getIndexItemArray(index int64) ([]byte, error) {
 	// calc index page no
-	previousIndexPageIndex := index >> q.options.IndexItemsPerPage
+	previousIndexPageIndex := index >> uint(q.options.IndexItemsPerPage)
 
 	indexDB, err := q.indexFile.acquireDB(previousIndexPageIndex)
 	if err != nil {
@@ -473,6 +484,11 @@ func (q *FileQueue) Close() error {
 	return nil
 }
 
+// Delete all used data files to free disk space.
+//
+// BigQueue will persist enqueued data in disk files, these data files will remain even after
+// the data in them has been dequeued later, so your application is responsible to periodically call
+// this method to delete all used data files and free disk space.
 func (q *FileQueue) Gc() error {
 	frontIndex := q.FrontIndex
 
@@ -487,7 +503,7 @@ func (q *FileQueue) Gc() error {
 		return err
 	}
 
-	indexPageIndex := frontIndex >> q.options.IndexItemsPerPage
+	indexPageIndex := frontIndex >> uint(q.options.IndexItemsPerPage)
 	bb, err := q.getIndexItemArray(frontIndex)
 	if err != nil {
 		return err

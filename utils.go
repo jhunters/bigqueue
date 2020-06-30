@@ -47,7 +47,7 @@ func GetFileName(prefix string, suffix string, index int64) string {
 	return prefix + strconv.Itoa(int(index)) + suffix
 }
 
-//整形转换成字节
+//int64 to byte array
 func IntToBytes(n int64) []byte {
 	x := int64(n)
 	bytesBuffer := bytes.NewBuffer([]byte{})
@@ -55,7 +55,7 @@ func IntToBytes(n int64) []byte {
 	return bytesBuffer.Bytes()
 }
 
-//字节转换成整形
+//byte to int64
 func BytesToInt(b []byte) int64 {
 	bytesBuffer := bytes.NewBuffer(b)
 
@@ -65,6 +65,7 @@ func BytesToInt(b []byte) int64 {
 	return int64(x)
 }
 
+// bytes to int32
 func BytesToInt32(b []byte) int32 {
 	bytesBuffer := bytes.NewBuffer(b)
 
@@ -75,7 +76,7 @@ func BytesToInt32(b []byte) int32 {
 }
 
 func Mod(val int64, bits int) int64 {
-	return val - ((val >> bits) << bits)
+	return val - ((val >> uint(bits)) << uint(bits))
 }
 
 func GetFiles(pathname string) (*list.List, error) {

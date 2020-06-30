@@ -63,7 +63,7 @@ func (db *DB) Open(mode os.FileMode) error {
 	// Open data file and separate sync handler for metadata writes.
 	var err error
 
-	if db.file, err = os.OpenFile(db.path, flag|os.O_CREATE, mode); err != nil {
+	if db.file, err = os.OpenFile(db.Path(), flag|os.O_CREATE, mode); err != nil {
 		_ = db.close()
 		return err
 	}
