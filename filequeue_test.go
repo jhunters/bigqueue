@@ -165,6 +165,31 @@ func TestFileQueue_Peek(t *testing.T) {
 
 }
 
+func TestFileQueue_Gc(t *testing.T) {
+	path := Tempfile()
+	defer clearFiles(path, "testqueue")
+
+	var queue = new(FileQueue)
+	// use custom options
+	var options = &Options{
+		DataPageSize:      128,
+		GcLock:            false,
+		IndexItemsPerPage: 17,
+	}
+
+	err := queue.Open(path, "testqueue", options)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer queue.Close()
+
+	enqueue(queue, []byte("hello xiemalin"), 500, t)
+	dequeue(queue, []byte("hello xiemalin"), 500, t)
+	queue.Gc()
+
+}
+
 // tempfile returns a temporary file path.
 func Tempfile() string {
 	return "./bin/temp"
