@@ -20,6 +20,6 @@ test:
 	go test -timeout 20m -v -coverprofile cover.out -covermode atomic
 	
 race:
-	go test -bench=. -benchtime=3s -run=^$
+	go test -bench=. -benchtime=1s -run=^$
 
 .PHONY: fmt test gosimple unused
