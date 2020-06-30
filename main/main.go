@@ -7,6 +7,7 @@ import (
 	"github.com/jhunters/bigqueue"
 )
 
+// a demo to show how to enqueue and dequeue data
 func main() {
 	var queue = new(bigqueue.FileQueue)
 
@@ -16,7 +17,7 @@ func main() {
 		IndexItemsPerPage: bigqueue.DefaultIndexItemsPerPage,
 	}
 
-	err := queue.Open(".", "testqueue", DefaultOptions)
+	err := queue.Open("./bin", "testqueue", DefaultOptions)
 
 	if err != nil {
 		fmt.Println(err)
