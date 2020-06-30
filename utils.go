@@ -79,6 +79,7 @@ func Mod(val int64, bits int) int64 {
 	return val - ((val >> uint(bits)) << uint(bits))
 }
 
+// get all files from current directory. not include any sub directories
 func GetFiles(pathname string) (*list.List, error) {
 
 	files := list.New()
@@ -93,6 +94,7 @@ func GetFiles(pathname string) (*list.List, error) {
 	return files, err
 }
 
+// remove all files from current directory. not include any sub directories
 func RemoveFiles(pathname string) error {
 	list, err := GetFiles(pathname)
 	if err != nil {

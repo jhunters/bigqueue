@@ -50,7 +50,7 @@ func main() {
 	}
 	defer queue.Close()
 	
-	data := []byte("hello xiemalin")
+	data := []byte("hello jhunters")
 	
 	i, err := queue.Enqueue(data)
 	if err != nil {

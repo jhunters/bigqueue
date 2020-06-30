@@ -23,7 +23,7 @@ func main2() {
 		fmt.Println(err)
 	}
 	for i := 1; i < 100; i++ {
-		data := []byte("hello xiemalin" + strconv.Itoa(i))
+		data := []byte("hello jhunters" + strconv.Itoa(i))
 		queue.EnqueueAsync(data, func(index int64, err error) {
 			if err != nil {
 				fmt.Println(err)

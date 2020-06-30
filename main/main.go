@@ -28,7 +28,7 @@ func main() {
 
 	// do enqueue
 	for i := 1; i < 10; i++ {
-		data := []byte("hello xiemalin" + strconv.Itoa(i))
+		data := []byte("hello jhunters" + strconv.Itoa(i))
 		i, err := queue.Enqueue(data)
 		if err != nil {
 			fmt.Println(err)
