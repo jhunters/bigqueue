@@ -7,7 +7,7 @@ BigQueue-go is pure Golang implementation for big, fast and persistent queue bas
 
 
 [![Build Status](https://travis-ci.org/jhunters/bigqueue.svg?branch=master)](https://travis-ci.org/jhunters/bigqueue)
-
+[![codecov](https://codecov.io/gh/jhunters/bigqueue/branch/master/graph/badge.svg)](https://codecov.io/gh/jhunters/bigqueue)
 
 ## Feature Highlight:  
 1. **Fast**: close to the speed of direct memory access, both enqueue and dequeue are close to O(1) memory access.  
