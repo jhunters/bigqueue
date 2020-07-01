@@ -69,6 +69,8 @@ func main() {
 ```
 
 ## The Big Picture
+![design](./docs/images/log_collector.png)
+
 ![design](./docs/images/file_storage_overview.png)
 
 ![design](./docs/images/location_offset_overview.png)
