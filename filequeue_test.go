@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestFileQueue_OpenError(t *testing.T) {
@@ -190,13 +191,89 @@ func TestFileQueue_Gc(t *testing.T) {
 
 }
 
+func TestFileQueue_Subscribe(t *testing.T) {
+	path := Tempfile()
+	defer clearFiles(path, "testqueue")
+
+	i := 0
+	var queue = new(FileQueue)
+
+	err := queue.Subscribe(func(index int64, bb []byte, err error) {
+		i++
+	})
+	// here should err
+	if err != SubscribeFailedNoOpenErr {
+		t.Error("Subscribe shoule return err before queue opened.")
+	}
+
+	err = queue.Open(path, "testqueue", nil)
+
+	queue.Subscribe(func(index int64, bb []byte, err error) {
+		i++
+	})
+
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer queue.Close()
+
+	sz := 10
+
+	doEnqueue(queue, []byte("hello xiemalin"), sz, t)
+
+	time.Sleep(time.Duration(2) * time.Second)
+
+	if i != sz {
+		t.Error("subscribe count should be", sz, " but actually is ", i)
+	}
+
+	queue.FreeSubscribe()
+
+}
+
+func TestFileQueue_FreeSubscribe(t *testing.T) {
+	path := Tempfile()
+	defer clearFiles(path, "testqueue")
+
+	i := 0
+	var queue = new(FileQueue)
+
+	err := queue.Open(path, "testqueue", nil)
+
+	queue.Subscribe(func(index int64, bb []byte, err error) {
+		i++
+	})
+
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer queue.Close()
+
+	queue.FreeSubscribe()
+	sz := 10
+	// no longer receive subscrbie callback
+	enqueue(queue, []byte("hello xiemalin"), sz, t)
+
+	if i != 0 {
+		t.Error("subscribe count should be 0,  but actually is ", i)
+	}
+}
+
 // tempfile returns a temporary file path.
 func Tempfile() string {
 	return "./bin/temp"
 }
 
 func enqueue(queue Queue, content []byte, size int, t *testing.T) {
-	// enqueue 10 items
+	doEnqueue(queue, content, size, t)
+
+	sz := queue.Size()
+	if sz != int64(size) {
+		t.Error("Error enqueue count expect size is ", size, ", but acutal is ", sz)
+	}
+}
+
+func doEnqueue(queue Queue, content []byte, size int, t *testing.T) {
 	for i := 0; i < size; i++ {
 		idx, err := queue.Enqueue(content)
 		if err != nil {
@@ -206,11 +283,6 @@ func enqueue(queue Queue, content []byte, size int, t *testing.T) {
 		if idx != int64(i) {
 			t.Error("Error enqueue index, current is", idx, " expected is", i)
 		}
-	}
-
-	sz := queue.Size()
-	if sz != int64(size) {
-		t.Error("Error enqueue count expect size is ", size, ", but acutal is ", sz)
 	}
 }
 

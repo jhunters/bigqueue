@@ -27,4 +27,7 @@ type Queue interface {
 
 	// Delete all used data files to free disk space.
 	Gc() error
+
+	// Set to asynchous subscribe
+	Subscribe(fn func(int64, []byte, error)) error
 }

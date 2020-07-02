@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
+	"log"
 	"os"
 	"sync"
 	"time"
@@ -81,6 +82,11 @@ type FileQueue struct {
 
 	// queue options
 	options *Options
+
+	// set subscribe action
+	Subscriber func(int64, []byte, error)
+
+	enqueueChan chan bool
 }
 
 // Open the queue files
@@ -147,6 +153,8 @@ func (q *FileQueue) Open(dir string, queueName string, options *Options) error {
 	if err != nil {
 		return err
 	}
+
+	q.enqueueChan = make(chan bool, 1)
 	return nil
 }
 
@@ -240,6 +248,7 @@ func (q *FileQueue) Enqueue(data []byte) (int64, error) {
 	sz = len(bb)
 	copy(q.metaFile.data[:sz], bb[:])
 
+	go q.changeSubscribeStatus(true)
 	return toAppendArrayIndex, nil
 }
 
@@ -521,4 +530,54 @@ func (q *FileQueue) Gc() error {
 	q.TailIndex = frontIndex
 
 	return nil
+}
+
+func (q *FileQueue) Subscribe(fn func(int64, []byte, error)) error {
+	if q.enqueueChan == nil {
+		return SubscribeFailedNoOpenErr
+	}
+
+	if q.Subscriber != nil {
+		return SubscribeExistErr
+	}
+	q.Subscriber = fn
+	go q.doLoopSubscribe()
+	return nil
+}
+
+func (q *FileQueue) FreeSubscribe() {
+	q.Subscriber = nil
+	go q.changeSubscribeStatusForce(false)
+}
+
+func (q *FileQueue) changeSubscribeStatus(s bool) {
+	if len(q.enqueueChan) == 0 {
+		q.changeSubscribeStatusForce(s)
+	}
+}
+
+func (q *FileQueue) changeSubscribeStatusForce(s bool) {
+	q.enqueueChan <- s
+}
+
+func (q *FileQueue) doLoopSubscribe() {
+	for {
+		if q.Subscriber == nil {
+			return
+		}
+		for {
+			index, bb, err := q.Dequeue()
+			if bb == nil {
+				break // queue is empty
+			}
+			q.Subscriber(index, bb, err)
+		}
+
+		loop := <-q.enqueueChan
+
+		if !loop {
+			return
+		}
+	}
+	log.Println("loop end")
 }
