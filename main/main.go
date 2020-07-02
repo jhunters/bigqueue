@@ -10,13 +10,6 @@ import (
 
 // a demo to show how to enqueue and dequeue data
 func main() {
-	//	f, err := os.OpenFile("./bin/cpu.prof", os.O_RDWR|os.O_CREATE, 0644)
-	//	if err != nil {
-	//		log.Fatal(err)
-	//	}
-	//	defer f.Close()
-	//	pprof.StartCPUProfile(f)
-	//	defer pprof.StopCPUProfile()
 
 	var queue = new(bigqueue.FileQueue)
 
@@ -59,10 +52,6 @@ func main() {
 
 	// do gc action to free old data
 	queue.Gc()
-
-	//	pprof.StopCPUProfile()
-
-	time.Sleep(time.Duration(1000) * time.Second)
 
 }
 

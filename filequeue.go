@@ -42,7 +42,6 @@ var DefaultOptions = &Options{
 	indexPageSize:     defaultIndexPageSize,
 	IndexItemsPerPage: DefaultIndexItemsPerPage,
 	itemsPerPage:      defaultItemsPerPage,
-	GcLock:            false,
 }
 
 type FileQueue struct {
@@ -87,6 +86,8 @@ type FileQueue struct {
 	Subscriber func(int64, []byte, error)
 
 	enqueueChan chan bool
+
+	gcLock sync.Mutex
 }
 
 // Open the queue files
@@ -499,6 +500,8 @@ func (q *FileQueue) Close() error {
 // the data in them has been dequeued later, so your application is responsible to periodically call
 // this method to delete all used data files and free disk space.
 func (q *FileQueue) Gc() error {
+	q.gcLock.Lock()
+	defer q.gcLock.Unlock()
 	frontIndex := q.FrontIndex
 
 	if frontIndex == 0 {
