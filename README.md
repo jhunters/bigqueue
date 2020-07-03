@@ -34,7 +34,7 @@ $ go get github.com/jhunters/bigqueue
 
 ### Importing bigqueue
 
-To use bigqueue as an file implements queue, import as:
+To use bigqueue as an file implements queue, import as: 
 
 ```go
 
@@ -47,6 +47,7 @@ func main() {
 
 	if err != nil {
 		fmt.Println(err)
+		return
 	}
 	defer queue.Close()
 	
@@ -55,6 +56,7 @@ func main() {
 	i, err := queue.Enqueue(data)
 	if err != nil {
 		fmt.Println(err)
+		return
 	} else {
 		fmt.Println("Enqueued index=", i, string(data))
 	}
@@ -62,6 +64,7 @@ func main() {
 	index, bb, err := queue.Dequeue()
 	if err != nil {
 		fmt.Println(err)
+		return
 	}
 	
 	fmt.Println("Dequeue data:", index, string(bb))
