@@ -95,5 +95,8 @@ Benchmark_ParallelEnqueueDequeue-8       1254315              2760 ns/op
 PASS
 ok      github.com/bigqueue     40.028s
 ```
+## Contact us by wechat
+![design](./docs/images/contact_us.png)
+
 ## License
 BigQueue-Go is [Apache 2.0 licensed](./LICENSE).
