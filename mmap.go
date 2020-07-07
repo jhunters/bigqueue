@@ -57,6 +57,7 @@ func (db *DB) init() error {
 	return nil
 }
 
+// open target db file
 func (db *DB) Open(mode os.FileMode) error {
 
 	flag := os.O_RDWR

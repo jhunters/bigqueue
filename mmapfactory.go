@@ -9,6 +9,7 @@ import (
 	"sync"
 )
 
+// DBFactory is used to manupilate mulitple data files by index number
 type DBFactory struct {
 	lockMap map[int64]*sync.Mutex
 
@@ -65,6 +66,7 @@ func (f *DBFactory) getFilePath(index int64) string {
 	return f.filePath + "/" + GetFileName(f.filePrefix, f.fileSuffix, index)
 }
 
+// Close all data files
 func (f *DBFactory) Close() error {
 	if f.dbMap != nil {
 		for k, v := range f.dbMap {
