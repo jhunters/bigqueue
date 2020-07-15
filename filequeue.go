@@ -15,28 +15,32 @@ const (
 	defaultFrontPageSize = 1 << 3
 	// meta file page size
 	defaultMetaPageSize = 1 << 4
-	// data file size
+	// DefaultDataPageSize data file size
 	DefaultDataPageSize = 128 * 1024 * 1024
 
-	defaultItemLenBits       = 5
-	defaultIndexItemLen      = 1 << defaultItemLenBits
+	defaultItemLenBits  = 5
+	defaultIndexItemLen = 1 << defaultItemLenBits
+	// DefaultIndexItemsPerPage items numbers in one page
 	DefaultIndexItemsPerPage = 17
 	defaultItemsPerPage      = 1 << DefaultIndexItemsPerPage
 	// index file size
 	defaultIndexPageSize = defaultIndexItemLen * defaultItemsPerPage
-
+	// MaxInt64 max value of int64
 	MaxInt64 = 0x7fffffffffffffff
-
+	// IndexFileName file name
 	IndexFileName = "index"
-	DataFileName  = "data"
-	MetaFileName  = "meta_data"
+	// DataFileName file name
+	DataFileName = "data"
+	// MetaFileName file name
+	MetaFileName = "meta_data"
+	// FrontFileName file name
 	FrontFileName = "front_index"
 
 	filePrefix = "page-"
 	fileSuffix = ".dat"
 )
 
-// default options
+// DefaultOptions default options
 var DefaultOptions = &Options{
 	DataPageSize:      DefaultDataPageSize,
 	indexPageSize:     defaultIndexPageSize,
@@ -44,6 +48,7 @@ var DefaultOptions = &Options{
 	itemsPerPage:      defaultItemsPerPage,
 }
 
+// FileQueue queue implements with mapp file
 type FileQueue struct {
 	// front index of the big queue,
 	FrontIndex int64
@@ -93,11 +98,11 @@ type FileQueue struct {
 // Open the queue files
 func (q *FileQueue) Open(dir string, queueName string, options *Options) error {
 	if len(dir) == 0 {
-		return errors.New("parameter 'dir' can not be blank.")
+		return errors.New("Parameter 'dir' can not be blank.")
 	}
 
 	if len(queueName) == 0 {
-		return errors.New("parameter 'queueName' can not be blank.")
+		return errors.New("Parameter 'queueName' can not be blank.")
 	}
 
 	if options == nil {
@@ -159,12 +164,12 @@ func (q *FileQueue) Open(dir string, queueName string, options *Options) error {
 	return nil
 }
 
-// Determines whether a queue is empty
+// IsEmpty to determines whether a queue is empty
 func (q *FileQueue) IsEmpty() bool {
 	return q.FrontIndex >= q.HeadIndex
 }
 
-// Total number of items available in the queue.
+// Size to return total number of items available in the queue.
 func (q *FileQueue) Size() int64 {
 	sz := q.HeadIndex - q.FrontIndex
 	if sz < 0 {
@@ -173,7 +178,7 @@ func (q *FileQueue) Size() int64 {
 	return int64(sz)
 }
 
-// Adds an item at the queue and HeadIndex will increase
+// EnqueueAsync adds an item at the queue and HeadIndex will increase
 // Asynchouous mode will call back with fn function
 func (q *FileQueue) EnqueueAsync(data []byte, fn func(int64, error)) {
 	go q.doEnqueueAsync(data, fn)
@@ -184,7 +189,7 @@ func (q *FileQueue) doEnqueueAsync(data []byte, fn func(int64, error)) {
 	fn(index, err)
 }
 
-// Adds an item at the queue and HeadIndex will increase
+// Enqueue adds an item at the queue and HeadIndex will increase
 func (q *FileQueue) Enqueue(data []byte) (int64, error) {
 	sz := len(data)
 	if sz == 0 {
@@ -253,7 +258,7 @@ func (q *FileQueue) Enqueue(data []byte) (int64, error) {
 	return toAppendArrayIndex, nil
 }
 
-// Retrieves and removes the front of a queue
+// Dequeue Retrieves and removes the front of a queue
 func (q *FileQueue) Dequeue() (int64, []byte, error) {
 
 	if q.IsEmpty() {
@@ -269,7 +274,7 @@ func (q *FileQueue) Dequeue() (int64, []byte, error) {
 	return index, bb, err
 }
 
-// Retrieves the item at the front of a queue
+// Peek Retrieves the item at the front of a queue
 // if item exist return with index id, item data
 func (q *FileQueue) Peek() (int64, []byte, error) {
 	if q.IsEmpty() {
@@ -281,6 +286,7 @@ func (q *FileQueue) Peek() (int64, []byte, error) {
 	return index, bb, err
 }
 
+// Skip the target n items to front index
 func (q *FileQueue) Skip(count int64) error {
 	if q.IsEmpty() {
 		return nil
@@ -323,8 +329,9 @@ func (q *FileQueue) peek(index int64) ([]byte, error) {
 		return nil, err
 	}
 
-	bb = dataDB.data[dataItemOffset : dataItemOffset+dataItemLength]
-	return bb, nil
+	ret := make([]byte, dataItemOffset+dataItemLength-dataItemOffset)
+	copy(ret, dataDB.data[dataItemOffset:])
+	return ret, nil
 }
 
 func (q *FileQueue) validateIndex(index int64) error {
