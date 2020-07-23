@@ -8,7 +8,7 @@ import (
 	"github.com/jhunters/bigqueue"
 )
 
-func main2() {
+func main() {
 	var queue = new(bigqueue.FileQueue)
 
 	var DefaultOptions = &bigqueue.Options{
