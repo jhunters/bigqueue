@@ -1,4 +1,4 @@
-// +build !windows,!plan9,!solaris,!darwin
+// +build darwin
 
 package bigqueue
 
@@ -10,7 +10,7 @@ import (
 
 // fdatasync flushes written data to a file descriptor.
 func fdatasync(db *DB) error {
-	return syscall.Fdatasync(int(db.file.Fd()))
+	return syscall.Fsync(int(db.file.Fd()))
 }
 
 // mmap memory maps a DB's data file.
