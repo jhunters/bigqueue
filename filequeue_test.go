@@ -10,10 +10,7 @@ import (
 func TestFileQueue_OpenError(t *testing.T) {
 	path := Tempfile()
 	defer clearFiles(path, "testqueue")
-	var queue = &FileQueue{
-		HeadIndex: 0,
-		TailIndex: 0,
-	}
+	var queue = &FileQueue{}
 	//var queue = new(FileQueue)
 
 	err := queue.Open("", "", nil)
