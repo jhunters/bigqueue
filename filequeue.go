@@ -51,15 +51,15 @@ var DefaultOptions = &Options{
 // FileQueue queue implements with mapp file
 type FileQueue struct {
 	// front index of the big queue,
-	FrontIndex int64
+	frontIndex int64
 
 	// head index of the array, this is the read write barrier.
 	// readers can only read items before this index, and writes can write this index or after
-	HeadIndex int64
+	headIndex int64
 
 	// tail index of the array,
 	// readers can't read items before this tail
-	TailIndex int64
+	tailIndex int64
 
 	// head index of the data page, this is the to be appended data page index
 	headDataPageIndex int64
@@ -88,7 +88,7 @@ type FileQueue struct {
 	options *Options
 
 	// set subscribe action
-	Subscriber func(int64, []byte, error)
+	subscriber func(int64, []byte, error)
 
 	enqueueChan chan bool
 
@@ -166,12 +166,12 @@ func (q *FileQueue) Open(dir string, queueName string, options *Options) error {
 
 // IsEmpty to determines whether a queue is empty
 func (q *FileQueue) IsEmpty() bool {
-	return q.FrontIndex >= q.HeadIndex
+	return q.frontIndex >= q.headIndex
 }
 
 // Size to return total number of items available in the queue.
 func (q *FileQueue) Size() int64 {
-	sz := q.HeadIndex - q.FrontIndex
+	sz := q.headIndex - q.frontIndex
 	if sz < 0 {
 		sz = 0
 	}
@@ -221,7 +221,7 @@ func (q *FileQueue) Enqueue(data []byte) (int64, error) {
 	//update to next
 	q.headDataItemOffset = q.headDataItemOffset + int64(sz)
 
-	toAppendArrayIndex := q.HeadIndex
+	toAppendArrayIndex := q.headIndex
 	toAppendIndexPageIndex := toAppendArrayIndex >> uint(q.options.IndexItemsPerPage)
 
 	indexDB, err := q.indexFile.acquireDB(toAppendIndexPageIndex)
@@ -242,12 +242,12 @@ func (q *FileQueue) Enqueue(data []byte) (int64, error) {
 	copy(indexDB.data[toAppendIndexItemOffset:toAppendIndexItemOffset+defaultIndexItemLen], bb[:defaultIndexItemLen])
 
 	// update next to the head index
-	q.HeadIndex = q.HeadIndex + 1
+	q.headIndex = q.headIndex + 1
 
 	// update meta data
 	b = new(bytes.Buffer)
-	binary.Write(b, binary.BigEndian, q.HeadIndex)
-	binary.Write(b, binary.BigEndian, q.TailIndex)
+	binary.Write(b, binary.BigEndian, q.headIndex)
+	binary.Write(b, binary.BigEndian, q.tailIndex)
 
 	bb = b.Bytes()
 
@@ -280,7 +280,7 @@ func (q *FileQueue) Peek() (int64, []byte, error) {
 	if q.IsEmpty() {
 		return -1, nil, nil
 	}
-	index := q.FrontIndex
+	index := q.frontIndex
 
 	bb, err := q.peek(index)
 	return index, bb, err
@@ -335,12 +335,12 @@ func (q *FileQueue) peek(index int64) ([]byte, error) {
 }
 
 func (q *FileQueue) validateIndex(index int64) error {
-	if q.TailIndex <= q.HeadIndex {
-		if index < q.TailIndex || index > q.HeadIndex {
+	if q.tailIndex <= q.headIndex {
+		if index < q.tailIndex || index > q.headIndex {
 			return IndexOutOfBoundTH
 		}
 	} else {
-		if index < q.TailIndex && index >= q.HeadIndex {
+		if index < q.tailIndex && index >= q.headIndex {
 			return IndexOutOfBoundTH
 		}
 	}
@@ -352,7 +352,7 @@ func (q *FileQueue) updateQueueFrontIndex() (int64, error) {
 	q.queueFrontWriteLock.Lock()
 	defer q.queueFrontWriteLock.Unlock()
 
-	queueFrontIndex := q.FrontIndex
+	queueFrontIndex := q.frontIndex
 	nextQueueFrontIndex := queueFrontIndex
 
 	if nextQueueFrontIndex == MaxInt64 {
@@ -360,9 +360,9 @@ func (q *FileQueue) updateQueueFrontIndex() (int64, error) {
 	} else {
 		nextQueueFrontIndex++
 	}
-	q.FrontIndex = nextQueueFrontIndex
+	q.frontIndex = nextQueueFrontIndex
 
-	bb := IntToBytes(q.FrontIndex)
+	bb := IntToBytes(q.frontIndex)
 	for idx, b := range bb {
 		q.frontFile.data[idx] = b
 
@@ -383,8 +383,8 @@ func (q *FileQueue) initFrontFile() error {
 	if err != nil {
 		return err
 	}
-	q.FrontIndex = BytesToInt(q.frontFile.data[:defaultFrontPageSize])
-	Assert(q.FrontIndex >= 0, "front index can not be negetive number. value is %v", q.FrontIndex)
+	q.frontIndex = BytesToInt(q.frontFile.data[:defaultFrontPageSize])
+	Assert(q.frontIndex >= 0, "front index can not be negetive number. value is %v", q.frontIndex)
 	return nil
 }
 
@@ -401,11 +401,11 @@ func (q *FileQueue) initMetaFile() error {
 		return err
 	}
 
-	q.HeadIndex = BytesToInt(q.metaFile.data[:8])
-	q.TailIndex = BytesToInt(q.metaFile.data[9:16])
+	q.headIndex = BytesToInt(q.metaFile.data[:8])
+	q.tailIndex = BytesToInt(q.metaFile.data[9:16])
 
-	Assert(q.HeadIndex >= 0, "head index can not be negetive number. value is %v", q.HeadIndex)
-	Assert(q.TailIndex >= 0, "tail index can not be negetive number. value is %v", q.TailIndex)
+	Assert(q.headIndex >= 0, "head index can not be negetive number. value is %v", q.headIndex)
+	Assert(q.tailIndex >= 0, "tail index can not be negetive number. value is %v", q.tailIndex)
 	return nil
 }
 
@@ -416,7 +416,7 @@ func (q *FileQueue) initDataPageIndex() error {
 		return nil
 	}
 	// get from index file
-	previousIndex := q.HeadIndex - 1
+	previousIndex := q.headIndex - 1
 
 	bb, err := q.getIndexItemArray(previousIndex)
 	if err != nil {
@@ -477,6 +477,7 @@ func (q *FileQueue) initDirs() error {
 	return nil
 }
 
+// Close close file queue
 func (q *FileQueue) Close() error {
 	q.lock.Lock()
 	defer q.lock.Unlock()
@@ -501,7 +502,7 @@ func (q *FileQueue) Close() error {
 	return nil
 }
 
-// Delete all used data files to free disk space.
+//Gc Delete all used data files to free disk space.
 //
 // BigQueue will persist enqueued data in disk files, these data files will remain even after
 // the data in them has been dequeued later, so your application is responsible to periodically call
@@ -509,7 +510,7 @@ func (q *FileQueue) Close() error {
 func (q *FileQueue) Gc() error {
 	q.gcLock.Lock()
 	defer q.gcLock.Unlock()
-	frontIndex := q.FrontIndex
+	frontIndex := q.frontIndex
 
 	if frontIndex == 0 {
 		return nil
@@ -537,26 +538,28 @@ func (q *FileQueue) Gc() error {
 		q.dataFile.removeBeforeIndex(dataPageIndex)
 	}
 
-	q.TailIndex = frontIndex
+	q.tailIndex = frontIndex
 
 	return nil
 }
 
+// Subscribe subscribe a call back function to subscribe message
 func (q *FileQueue) Subscribe(fn func(int64, []byte, error)) error {
 	if q.enqueueChan == nil {
 		return SubscribeFailedNoOpenErr
 	}
 
-	if q.Subscriber != nil {
+	if q.subscriber != nil {
 		return SubscribeExistErr
 	}
-	q.Subscriber = fn
+	q.subscriber = fn
 	go q.doLoopSubscribe()
 	return nil
 }
 
+// FreeSubscribe free subscriber
 func (q *FileQueue) FreeSubscribe() {
-	q.Subscriber = nil
+	q.subscriber = nil
 	go q.changeSubscribeStatusForce(false)
 }
 
@@ -572,7 +575,7 @@ func (q *FileQueue) changeSubscribeStatusForce(s bool) {
 
 func (q *FileQueue) doLoopSubscribe() {
 	for {
-		if q.Subscriber == nil {
+		if q.subscriber == nil {
 			return
 		}
 		for {
@@ -580,7 +583,7 @@ func (q *FileQueue) doLoopSubscribe() {
 			if bb == nil {
 				break // queue is empty
 			}
-			q.Subscriber(index, bb, err)
+			q.subscriber(index, bb, err)
 		}
 
 		loop := <-q.enqueueChan
