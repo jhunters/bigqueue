@@ -1,2 +1,4 @@
 github.com/jhunters/bigqueue v1.0.1 h1:xIcBuzfm1ILMdGY5M+fukI84sqv87SPFUDEFT7xaKmc=
 github.com/jhunters/bigqueue v1.0.1/go.mod h1:CbEObWKPe9f5OYtOu99fb92F+gJJewLhxeDm/V+WBio=
+github.com/jhunters/bigqueue v1.0.2-0.20200729074310-6f30f22b3569 h1:TvodcU/oLacLaqtzt30AGsh5qOyPAOkH4bh6pO+Gof8=
+github.com/jhunters/bigqueue v1.0.2-0.20200729074310-6f30f22b3569/go.mod h1:bQTtCpDTAhgoEnScynSPIzx1F8BqKaX31jiXpnJBPtk=
