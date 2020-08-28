@@ -169,9 +169,23 @@ func (q *FileQueue) IsEmpty() bool {
 	return q.frontIndex >= q.headIndex
 }
 
+// isEmpty to determines whether a queue is empty by target frontIndex
+func (q *FileQueue) isEmpty(frontIndex int64) bool {
+	return frontIndex >= q.headIndex
+}
+
 // Size to return total number of items available in the queue.
 func (q *FileQueue) Size() int64 {
 	sz := q.headIndex - q.frontIndex
+	if sz < 0 {
+		sz = 0
+	}
+	return int64(sz)
+}
+
+// to calc size by target frontIndex
+func (q *FileQueue) size(frontIndex int64) int64 {
+	sz := q.headIndex - frontIndex
 	if sz < 0 {
 		sz = 0
 	}
@@ -589,7 +603,7 @@ func (q *FileQueue) doLoopSubscribe() {
 		loop := <-q.enqueueChan
 
 		if !loop {
-			return
+			break
 		}
 	}
 	log.Println("loop end")
