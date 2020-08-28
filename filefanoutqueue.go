@@ -123,6 +123,7 @@ func (q *FileFanoutQueue) Peek(fanoutID int64) (int64, []byte, error) {
 	}
 
 	index := qf.frontIndex
+
 	data, err := q.fileQueue.peek(index)
 	if err != nil {
 		return -1, nil, err
