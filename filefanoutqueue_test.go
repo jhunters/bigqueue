@@ -8,9 +8,9 @@ import (
 
 func TestFanoutQueueOpen(t *testing.T) {
 	path := Tempfile()
-	defer clearFiles(path, "testqueue")
+	defer clearFiles(path, "fanoutqueue")
 	fq := FileFanoutQueue{}
-	err := fq.Open(path, "testqueue", nil)
+	err := fq.Open(path, "fanoutqueue", nil)
 	if err != nil {
 		t.Error("open fanout queue failed", err)
 	}
@@ -19,12 +19,12 @@ func TestFanoutQueueOpen(t *testing.T) {
 
 func TestFanoutQueueIsEmpty(t *testing.T) {
 	path := Tempfile()
-	defer clearFiles(path, "testqueue")
+	defer clearFiles(path, "fanoutqueue")
 	fanoutID := int64(100)
-	defer clearFrontIndexFiles(path, "testqueue", fanoutID)
+	defer clearFrontIndexFiles(path, "fanoutqueue", fanoutID)
 
 	fq := FileFanoutQueue{}
-	err := fq.Open(path, "testqueue", nil)
+	err := fq.Open(path, "fanoutqueue", nil)
 
 	if err != nil {
 		t.Error("open fanout queue failed", err)
@@ -39,12 +39,12 @@ func TestFanoutQueueIsEmpty(t *testing.T) {
 
 func TestFanoutQueueSize(t *testing.T) {
 	path := Tempfile()
-	defer clearFiles(path, "testqueue")
+	defer clearFiles(path, "fanoutqueue")
 	fanoutID := int64(100)
-	defer clearFrontIndexFiles(path, "testqueue", fanoutID)
+	defer clearFrontIndexFiles(path, "fanoutqueue", fanoutID)
 
 	fq := FileFanoutQueue{}
-	err := fq.Open(path, "testqueue", nil)
+	err := fq.Open(path, "fanoutqueue", nil)
 
 	if err != nil {
 		t.Error("open fanout queue failed", err)
@@ -60,12 +60,12 @@ func TestFanoutQueueSize(t *testing.T) {
 
 func TestFanoutQueueEnqueue(t *testing.T) {
 	path := Tempfile()
-	defer clearFiles(path, "testqueue")
+	defer clearFiles(path, "fanoutqueue")
 	fanoutID := int64(100)
-	defer clearFrontIndexFiles(path, "testqueue", fanoutID)
+	defer clearFrontIndexFiles(path, "fanoutqueue", fanoutID)
 
 	fq := FileFanoutQueue{}
-	err := fq.Open(path, "testqueue", nil)
+	err := fq.Open(path, "fanoutqueue", nil)
 
 	if err != nil {
 		t.Error("open fanout queue failed", err)
@@ -99,14 +99,14 @@ func clearFrontIndexFiles(path, queueName string, fanoutID int64) {
 
 func TestFanoutQueueEnqueueDequeue(t *testing.T) {
 	path := Tempfile()
-	defer clearFiles(path, "testqueue")
+	defer clearFiles(path, "fanoutqueue")
 	fanoutID := int64(100)
 	fanoutID1 := int64(101)
-	defer clearFrontIndexFiles(path, "testqueue", fanoutID)
-	defer clearFrontIndexFiles(path, "testqueue", fanoutID1)
+	defer clearFrontIndexFiles(path, "fanoutqueue", fanoutID)
+	defer clearFrontIndexFiles(path, "fanoutqueue", fanoutID1)
 
 	fq := FileFanoutQueue{}
-	err := fq.Open(path, "testqueue", nil)
+	err := fq.Open(path, "fanoutqueue", nil)
 
 	if err != nil {
 		t.Error("open fanout queue failed", err)
@@ -133,14 +133,14 @@ func TestFanoutQueueEnqueueDequeue(t *testing.T) {
 
 func TestFanoutQueueEnqueuePeek(t *testing.T) {
 	path := Tempfile()
-	defer clearFiles(path, "testqueue")
+	defer clearFiles(path, "fanoutqueue")
 	fanoutID := int64(100)
 	fanoutID1 := int64(101)
-	defer clearFrontIndexFiles(path, "testqueue", fanoutID)
-	defer clearFrontIndexFiles(path, "testqueue", fanoutID1)
+	defer clearFrontIndexFiles(path, "fanoutqueue", fanoutID)
+	defer clearFrontIndexFiles(path, "fanoutqueue", fanoutID1)
 
 	fq := FileFanoutQueue{}
-	err := fq.Open(path, "testqueue", nil)
+	err := fq.Open(path, "fanoutqueue", nil)
 
 	if err != nil {
 		t.Error("open fanout queue failed", err)
@@ -167,15 +167,15 @@ func TestFanoutQueueEnqueuePeek(t *testing.T) {
 
 func TestFanoutQueueSkip(t *testing.T) {
 	path := Tempfile()
-	defer clearFiles(path, "testqueue")
+	defer clearFiles(path, "fanoutqueue")
 	fanoutID := int64(100)
 	fanoutID1 := int64(101)
 
-	defer clearFrontIndexFiles(path, "testqueue", fanoutID)
-	defer clearFrontIndexFiles(path, "testqueue", fanoutID1)
+	defer clearFrontIndexFiles(path, "fanoutqueue", fanoutID)
+	defer clearFrontIndexFiles(path, "fanoutqueue", fanoutID1)
 
 	fq := FileFanoutQueue{}
-	err := fq.Open(path, "testqueue", nil)
+	err := fq.Open(path, "fanoutqueue", nil)
 
 	if err != nil {
 		t.Error("open fanout queue failed", err)
