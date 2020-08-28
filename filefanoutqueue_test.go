@@ -170,6 +170,7 @@ func TestFanoutQueueSkip(t *testing.T) {
 	defer clearFiles(path, "testqueue")
 	fanoutID := int64(100)
 	fanoutID1 := int64(101)
+
 	defer clearFrontIndexFiles(path, "testqueue", fanoutID)
 	defer clearFrontIndexFiles(path, "testqueue", fanoutID1)
 
