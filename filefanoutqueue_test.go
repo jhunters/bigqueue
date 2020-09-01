@@ -222,7 +222,7 @@ func TestFanoutQueueSubscribe(t *testing.T) {
 	defer fq.Close()
 
 	fanoutIDCount1, fanoutIDCount2 := 0, 0
-	count := 1
+	count := 10
 
 	fq.Subscribe(fanoutID, func(index int64, data []byte, err error) {
 		fanoutIDCount1++
@@ -249,4 +249,5 @@ func TestFanoutQueueSubscribe(t *testing.T) {
 	if fanoutIDCount2 != count {
 		t.Error("subscribe ", fanoutID1, " count should be ", count, " but actually is ", fanoutIDCount2)
 	}
+
 }
