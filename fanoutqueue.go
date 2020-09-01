@@ -30,4 +30,7 @@ type FanOutQueue interface {
 
 	// Set to asynchous subscribe
 	Subscribe(fanoutID int64, fn func(int64, []byte, error)) error
+
+	// to free asynchous subscribe
+	FreeSubscribe(fanoutID int64)
 }

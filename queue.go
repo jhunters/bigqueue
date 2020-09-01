@@ -30,4 +30,7 @@ type Queue interface {
 
 	// Set to asynchous subscribe
 	Subscribe(fn func(int64, []byte, error)) error
+
+	// to free asynchous subscribe
+	FreeSubscribe()
 }

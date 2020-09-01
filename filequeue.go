@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
-	"log"
 	"os"
 	"sync"
 	"time"
@@ -606,5 +605,4 @@ func (q *FileQueue) doLoopSubscribe() {
 			break
 		}
 	}
-	log.Println("loop end")
 }

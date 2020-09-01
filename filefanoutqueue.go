@@ -1,6 +1,7 @@
 package bigqueue
 
 import (
+	"errors"
 	"os"
 	"strconv"
 	"sync"
@@ -38,6 +39,10 @@ type QueueFront struct {
 
 	// locks for queue front write management
 	queueFrontWriteLock sync.Mutex
+
+	subscribLock sync.Mutex
+
+	subscriber func(int64, []byte, error)
 }
 
 // Open the queue files
@@ -57,6 +62,8 @@ func (q *FileFanoutQueue) Open(dir string, queueName string, options *Options) e
 	q.path = dir + "/" + queueName
 
 	q.frontIndexMap = make(map[int64]*QueueFront)
+
+	q.fileQueue.Subscribe(q.doSubscribe)
 
 	return nil
 }
@@ -83,6 +90,7 @@ func (q *FileFanoutQueue) Size(fanoutID int64) int64 {
 
 // Close free the resource
 func (q *FileFanoutQueue) Close() {
+	q.fileQueue.FreeSubscribe()
 	q.fileQueue.Close()
 
 	for _, v := range q.frontIndexMap {
@@ -151,6 +159,34 @@ func (q *FileFanoutQueue) Skip(fanoutID int64, count int64) error {
 	return nil
 }
 
+// Subscribe do async subscribe by target fanout id
+func (q *FileFanoutQueue) Subscribe(fanoutID int64, fn func(int64, []byte, error)) error {
+	if fn == nil {
+		return errors.New("call back 'fn' is nil.")
+	}
+	qf, err := q.getQueueFront(fanoutID)
+	if err != nil {
+		return err
+	}
+
+	if qf.subscriber != nil {
+		return SubscribeExistErr
+	}
+
+	qf.subscriber = fn
+
+	return nil
+}
+
+// FreeSubscribe to free subscriber by target fanout id
+func (q *FileFanoutQueue) FreeSubscribe(fanoutID int64) {
+	qf, err := q.getQueueFront(fanoutID)
+	if err != nil {
+		return
+	}
+	qf.subscriber = nil
+}
+
 func (q *FileFanoutQueue) getQueueFront(fanoutID int64) (*QueueFront, error) {
 	q.queueGetLock.Lock()
 	defer q.queueGetLock.Unlock()
@@ -217,4 +253,30 @@ func (q *QueueFront) updateQueueFrontIndex(count int64) (int64, error) {
 	}
 
 	return queueFrontIndex, nil
+}
+
+func (q *FileFanoutQueue) doSubscribe(index int64, data []byte, err error) {
+	for fanoutID, v := range q.frontIndexMap {
+		if v.subscriber != nil {
+			v.subscribLock.Lock()
+			defer v.subscribLock.Unlock()
+			// here should be care something about blocked callback subscriber
+			q.doLoopSubscribe(fanoutID, v.subscriber)
+		}
+
+	}
+}
+
+func (q *FileFanoutQueue) doLoopSubscribe(fanoutID int64, subscriber func(int64, []byte, error)) {
+	if subscriber == nil {
+		return
+	}
+	for {
+		index, bb, err := q.Dequeue(fanoutID)
+		if bb == nil || len(bb) == 0 {
+			break // queue is empty
+		}
+		subscriber(index, bb, err)
+	}
+
 }

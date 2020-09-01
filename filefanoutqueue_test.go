@@ -4,6 +4,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestFanoutQueueOpen(t *testing.T) {
@@ -121,7 +122,6 @@ func TestFanoutQueueEnqueueDequeue(t *testing.T) {
 
 	index, data, _ := fq.Dequeue(fanoutID)
 	index1, data1, _ := fq.Dequeue(fanoutID1)
-
 	if index != index1 {
 		t.Error("index should same", index, index1)
 	}
@@ -200,5 +200,53 @@ func TestFanoutQueueSkip(t *testing.T) {
 	index1, data1, _ := fq.Peek(fanoutID1)
 	if index1 != 1 {
 		t.Error("index should be 1 but actually", index1, data1)
+	}
+}
+
+func TestFanoutQueueSubscribe(t *testing.T) {
+
+	path := Tempfile()
+	defer clearFiles(path, "fanoutqueue")
+	fanoutID := int64(100)
+	fanoutID1 := int64(101)
+
+	defer clearFrontIndexFiles(path, "fanoutqueue", fanoutID)
+	defer clearFrontIndexFiles(path, "fanoutqueue", fanoutID1)
+
+	fq := FileFanoutQueue{}
+	err := fq.Open(path, "fanoutqueue", nil)
+
+	if err != nil {
+		t.Error("open fanout queue failed", err)
+	}
+	defer fq.Close()
+
+	fanoutIDCount1, fanoutIDCount2 := 0, 0
+	count := 1
+
+	fq.Subscribe(fanoutID, func(index int64, data []byte, err error) {
+		fanoutIDCount1++
+	})
+
+	for i := 0; i < count; i++ {
+		_, err = fq.Enqueue([]byte("hello world" + strconv.Itoa(i)))
+
+		if err != nil {
+			t.Error("enqueue action failed", err)
+		}
+	}
+
+	fq.Subscribe(fanoutID1, func(index int64, data []byte, err error) {
+		fanoutIDCount2++
+	})
+
+	time.Sleep(time.Duration(2) * time.Second)
+
+	if fanoutIDCount1 != count {
+		t.Error("subscribe ", fanoutID, " count should be ", count, " but actually is ", fanoutIDCount1)
+	}
+
+	if fanoutIDCount2 != count {
+		t.Error("subscribe ", fanoutID1, " count should be ", count, " but actually is ", fanoutIDCount2)
 	}
 }
