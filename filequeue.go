@@ -37,6 +37,8 @@ const (
 
 	filePrefix = "page-"
 	fileSuffix = ".dat"
+
+	defaultFileMode = 0666
 )
 
 // DefaultOptions default options
@@ -392,7 +394,7 @@ func (q *FileQueue) initFrontFile() error {
 		opened:          true,
 	}
 
-	err := q.frontFile.Open(0666)
+	err := q.frontFile.Open(defaultFileMode)
 	if err != nil {
 		return err
 	}
@@ -409,7 +411,7 @@ func (q *FileQueue) initMetaFile() error {
 		opened:          true,
 	}
 
-	err := q.metaFile.Open(0666)
+	err := q.metaFile.Open(defaultFileMode)
 	if err != nil {
 		return err
 	}
@@ -494,6 +496,8 @@ func (q *FileQueue) initDirs() error {
 func (q *FileQueue) Close() error {
 	q.lock.Lock()
 	defer q.lock.Unlock()
+
+	q.FreeSubscribe()
 
 	// close front index file
 	if q.frontFile != nil {

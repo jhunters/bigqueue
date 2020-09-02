@@ -33,4 +33,7 @@ type FanOutQueue interface {
 
 	// to free asynchous subscribe
 	FreeSubscribe(fanoutID int64)
+
+	// FreeAllSubscribe to free all asynchous subscribe
+	FreeAllSubscribe()
 }

@@ -90,7 +90,6 @@ func (q *FileFanoutQueue) Size(fanoutID int64) int64 {
 
 // Close free the resource
 func (q *FileFanoutQueue) Close() {
-	q.fileQueue.FreeSubscribe()
 	q.fileQueue.Close()
 
 	for _, v := range q.frontIndexMap {
@@ -162,7 +161,7 @@ func (q *FileFanoutQueue) Skip(fanoutID int64, count int64) error {
 // Subscribe do async subscribe by target fanout id
 func (q *FileFanoutQueue) Subscribe(fanoutID int64, fn func(int64, []byte, error)) error {
 	if fn == nil {
-		return errors.New("call back 'fn' is nil.")
+		return errors.New("parameter 'fn' is nil.")
 	}
 	qf, err := q.getQueueFront(fanoutID)
 	if err != nil {
@@ -185,6 +184,14 @@ func (q *FileFanoutQueue) FreeSubscribe(fanoutID int64) {
 		return
 	}
 	qf.subscriber = nil
+}
+
+// FreeAllSubscribe to free all subscriber
+func (q *FileFanoutQueue) FreeAllSubscribe() {
+	for _, qf := range q.frontIndexMap {
+		qf.subscriber = nil
+	}
+
 }
 
 func (q *FileFanoutQueue) getQueueFront(fanoutID int64) (*QueueFront, error) {
@@ -222,7 +229,7 @@ func (q *QueueFront) open(path string) error {
 		opened:          true,
 	}
 
-	err = q.fanoutDatafile.Open(0666)
+	err = q.fanoutDatafile.Open(defaultFileMode)
 	if err != nil {
 		return err
 	}
