@@ -321,6 +321,7 @@ func (q *FileQueue) Skip(count int64) error {
 	return nil
 }
 
+// peek item from the queue
 func (q *FileQueue) peek(index int64) ([]byte, error) {
 	// get the queue message from the index
 	q.lock.RLock()
