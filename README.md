@@ -71,6 +71,10 @@ func main() {
 }
 ```
 
+## Docs
+1. [big queue tutorial](./docs/QueueGuid.md)
+2. fanout queue tutorial
+
 ## The Big Picture
 ![design](./docs/images/log_collector.png)
 
