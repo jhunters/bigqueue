@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-// _assert will panic with a given formatted message if the given condition is false.
+// Assert assert will panic with a given formatted message if the given condition is false.
 func Assert(condition bool, message string, v ...interface{}) {
 	if !condition {
 		panic(fmt.Sprintf("assertion failed: "+message, v...))
@@ -32,6 +32,8 @@ func printstack() {
 	fmt.Fprintln(os.Stderr, stack)
 }
 
+// PathExists to check the target path is exist
+// exist return true otherwise return false
 func PathExists(path string) (bool, error) {
 	_, err := os.Stat(path)
 	if err == nil {
@@ -43,11 +45,12 @@ func PathExists(path string) (bool, error) {
 	return false, err
 }
 
+// GetFileName to return joined file name
 func GetFileName(prefix string, suffix string, index int64) string {
 	return prefix + strconv.Itoa(int(index)) + suffix
 }
 
-//int64 to byte array
+// IntToBytes int64 to byte array
 func IntToBytes(n int64) []byte {
 	x := int64(n)
 	bytesBuffer := bytes.NewBuffer([]byte{})
@@ -55,7 +58,7 @@ func IntToBytes(n int64) []byte {
 	return bytesBuffer.Bytes()
 }
 
-//byte to int64
+// BytesToInt byte to int64
 func BytesToInt(b []byte) int64 {
 	bytesBuffer := bytes.NewBuffer(b)
 
@@ -65,7 +68,7 @@ func BytesToInt(b []byte) int64 {
 	return int64(x)
 }
 
-// bytes to int32
+// BytesToInt32 bytes to int32
 func BytesToInt32(b []byte) int32 {
 	bytesBuffer := bytes.NewBuffer(b)
 
@@ -75,11 +78,12 @@ func BytesToInt32(b []byte) int32 {
 	return int32(x)
 }
 
+// Mod return
 func Mod(val int64, bits int) int64 {
 	return val - ((val >> uint(bits)) << uint(bits))
 }
 
-// get all files from current directory. not include any sub directories
+// GetFiles get all files from current directory. not include any sub directories
 func GetFiles(pathname string) (*list.List, error) {
 
 	files := list.New()
@@ -94,7 +98,7 @@ func GetFiles(pathname string) (*list.List, error) {
 	return files, err
 }
 
-// remove all files from current directory. not include any sub directories
+// RemoveFiles remove all files from current directory. not include any sub directories
 func RemoveFiles(pathname string) error {
 	list, err := GetFiles(pathname)
 	if err != nil {
