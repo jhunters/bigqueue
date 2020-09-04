@@ -8,7 +8,7 @@ var (
 
 	IndexOutOfBoundTH = errors.New("Index is valid which should between tail and head index")
 
-	// repeat call Subscriber method
+	// SubscribeExistErr repeat call Subscriber method
 	SubscribeExistErr = errors.New("Subscriber alread set, can not repeat set.")
 
 	// Subscribe should call after queue Open method

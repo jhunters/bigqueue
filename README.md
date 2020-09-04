@@ -72,8 +72,8 @@ func main() {
 ```
 
 ## Docs
-1. [big queue tutorial](./docs/QueueGuid.md)
-2. fanout queue tutorial
+1. [big queue tutorial](./docs/QueueTutorial.md)
+2. [fanout queue tutorial](./docs/FanoutQueueTutorial.md)
 
 ## The Big Picture
 ![design](./docs/images/log_collector.png)
