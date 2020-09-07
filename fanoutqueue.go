@@ -2,6 +2,7 @@ package bigqueue
 
 // FanOutQueue queue supports with pub-sub feature
 type FanOutQueue interface {
+	// Open to open target file if failed error returns
 	Open(dir string, queueName string, options *Options) error
 
 	// IsEmpty Determines whether a queue is empty

@@ -90,10 +90,14 @@ func (q *FileFanoutQueue) Size(fanoutID int64) int64 {
 
 // Close free the resource
 func (q *FileFanoutQueue) Close() {
+	// close file queue
 	q.fileQueue.Close()
 
 	for _, v := range q.frontIndexMap {
-		v.fanoutDatafile.Close()
+		if v.fanoutDatafile != nil {
+			v.fanoutDatafile.Close()
+		}
+		v.fanoutDatafile = nil
 	}
 }
 

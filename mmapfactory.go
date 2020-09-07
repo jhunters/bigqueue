@@ -54,7 +54,7 @@ func (f *DBFactory) acquireDB(index int64) (*DB, error) {
 		opened:          true,
 	}
 
-	err := db.Open(0666)
+	err := db.Open(defaultFileMode)
 	if err != nil {
 		return nil, err
 	}
