@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
+	"log"
 	"os"
 	"sync"
 	"time"
@@ -47,6 +48,7 @@ var DefaultOptions = &Options{
 	indexPageSize:     defaultIndexPageSize,
 	IndexItemsPerPage: DefaultIndexItemsPerPage,
 	itemsPerPage:      defaultItemsPerPage,
+	AutoGCBySeconds:   0,
 }
 
 // FileQueue queue implements with mapp file
@@ -94,6 +96,8 @@ type FileQueue struct {
 	enqueueChan chan bool
 
 	gcLock sync.Mutex
+
+	autoGCQuit chan int
 }
 
 // Open the queue files
@@ -162,6 +166,12 @@ func (q *FileQueue) Open(dir string, queueName string, options *Options) error {
 	}
 
 	q.enqueueChan = make(chan bool, 1)
+
+	// check auto gc
+	if q.options.AutoGCBySeconds > 0 {
+		q.autoGC()
+	}
+
 	return nil
 }
 
@@ -498,6 +508,11 @@ func (q *FileQueue) Close() error {
 	q.lock.Lock()
 	defer q.lock.Unlock()
 
+	// to close auto gc if opened
+	if q.autoGCQuit != nil {
+		q.autoGCQuit <- 1
+	}
+
 	q.FreeSubscribe()
 
 	// close front index file
@@ -610,4 +625,24 @@ func (q *FileQueue) doLoopSubscribe() {
 			break
 		}
 	}
+}
+
+func (q *FileQueue) autoGC() {
+	ticker := time.NewTicker(time.Second * time.Duration(q.options.AutoGCBySeconds))
+	q.autoGCQuit = make(chan int)
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for {
+			select {
+			case <-ticker.C:
+				q.Gc()
+			case <-q.autoGCQuit:
+				ticker.Stop()
+				return
+			}
+		}
+		log.Println("Auto gc goroutine exit to end")
+	}()
 }

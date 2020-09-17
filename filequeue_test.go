@@ -171,14 +171,13 @@ func TestFileQueue_Gc(t *testing.T) {
 	// use custom options
 	var options = &Options{
 		DataPageSize:      128,
-		GcLock:            false,
 		IndexItemsPerPage: 17,
 	}
 
 	err := queue.Open(path, "testqueue", options)
 
 	if err != nil {
-		fmt.Println(err)
+		t.Error(err)
 	}
 	defer queue.Close()
 
@@ -186,6 +185,31 @@ func TestFileQueue_Gc(t *testing.T) {
 	dequeue(queue, []byte("hello xiemalin"), 500, t)
 	queue.Gc()
 
+}
+
+func TestFileQueue_AutoGc(t *testing.T) {
+	path := Tempfile()
+	defer clearFiles(path, "testqueue")
+
+	var queue = new(FileQueue)
+	// use custom options
+	var options = &Options{
+		DataPageSize:      128,
+		IndexItemsPerPage: 17,
+		AutoGCBySeconds:   1,
+	}
+
+	err := queue.Open(path, "testqueue", options)
+
+	if err != nil {
+		t.Error(err)
+	}
+	defer queue.Close()
+
+	doEnqueue(queue, []byte("hello xiemalin"), 500, t)
+	dequeue(queue, []byte("hello xiemalin"), 500, t)
+
+	time.Sleep(2 * time.Second)
 }
 
 func TestFileQueue_Subscribe(t *testing.T) {
@@ -284,7 +308,6 @@ func doEnqueue(queue Queue, content []byte, size int, t *testing.T) {
 }
 
 func dequeue(queue Queue, expectContent []byte, expectSize int, t *testing.T) {
-
 	count := 0
 	// enqueue 10 items
 	for i := 0; i < expectSize; i++ {
