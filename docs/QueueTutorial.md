@@ -99,6 +99,20 @@ The GC method is to delete old items from index and data page file(s) to free di
 	}
 ```
 
+**Auto Gc**: <br>
+To enable auto gc action.
+```go
+	var options = &bigqueue.Options{
+		DataPageSize:      bigqueue.DefaultDataPageSize,
+		GcLock:            false,
+		IndexItemsPerPage: bigqueue.DefaultIndexItemsPerPage,
+		AutoGCBySeconds:   1, // set auto gc action interval
+	}
+
+	// open file with target directory and queue name
+	err := queue.Open(".", "testqueue", options)
+```
+
 **Subscribe and FreeSbuscribe**: <br>
 The Subscribe method is dequeue item from queue in asynchouse way. like listener pattern.
 ```go
