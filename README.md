@@ -32,6 +32,11 @@ To start using BigQueue-Go, install Go and run `go get`:
 $ go get github.com/jhunters/bigqueue
 ```
 
+To run testcases:
+```sh
+$ go test -v .
+```
+
 ### Importing bigqueue
 
 To use bigqueue as an file implements queue, import as: 
