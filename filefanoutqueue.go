@@ -255,6 +255,11 @@ func (q *QueueFront) updateQueueFrontIndex(count int64) (int64, error) {
 	} else {
 		nextQueueFrontIndex += count
 	}
+	if nextQueueFrontIndex < 0 {
+		// if overflow then reset to zero
+		nextQueueFrontIndex = 0
+	}
+
 	q.frontIndex = nextQueueFrontIndex
 
 	bb := IntToBytes(q.frontIndex)

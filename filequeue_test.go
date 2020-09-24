@@ -35,7 +35,7 @@ func TestFileQueue_Open(t *testing.T) {
 	err := queue.Open(path, "testqueue", nil)
 
 	if err != nil {
-		fmt.Println(err)
+		t.Error(err)
 	}
 	defer queue.Close()
 
