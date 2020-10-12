@@ -165,7 +165,7 @@ func (q *FileFanoutQueue) Skip(fanoutID int64, count int64) error {
 // Subscribe do async subscribe by target fanout id
 func (q *FileFanoutQueue) Subscribe(fanoutID int64, fn func(int64, []byte, error)) error {
 	if fn == nil {
-		return errors.New("parameter 'fn' is nil.")
+		return errors.New("parameter 'fn' is nil")
 	}
 	qf, err := q.getQueueFront(fanoutID)
 	if err != nil {
@@ -173,7 +173,7 @@ func (q *FileFanoutQueue) Subscribe(fanoutID int64, fn func(int64, []byte, error
 	}
 
 	if qf.subscriber != nil {
-		return SubscribeExistErr
+		return ErrSubscribeExistErr
 	}
 
 	qf.subscriber = fn

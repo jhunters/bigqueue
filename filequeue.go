@@ -103,11 +103,11 @@ type FileQueue struct {
 // Open the queue files
 func (q *FileQueue) Open(dir string, queueName string, options *Options) error {
 	if len(dir) == 0 {
-		return errors.New("Parameter 'dir' can not be blank.")
+		return errors.New("Parameter 'dir' can not be blank")
 	}
 
 	if len(queueName) == 0 {
-		return errors.New("Parameter 'queueName' can not be blank.")
+		return errors.New("Parameter 'queueName' can not be blank")
 	}
 
 	if options == nil {
@@ -363,11 +363,11 @@ func (q *FileQueue) peek(index int64) ([]byte, error) {
 func (q *FileQueue) validateIndex(index int64) error {
 	if q.tailIndex <= q.headIndex {
 		if index < q.tailIndex || index > q.headIndex {
-			return IndexOutOfBoundTH
+			return ErrIndexOutOfBoundTH
 		}
 	} else {
 		if index < q.tailIndex && index >= q.headIndex {
-			return IndexOutOfBoundTH
+			return ErrIndexOutOfBoundTH
 		}
 	}
 
@@ -579,11 +579,11 @@ func (q *FileQueue) Gc() error {
 // Subscribe subscribe a call back function to subscribe message
 func (q *FileQueue) Subscribe(fn func(int64, []byte, error)) error {
 	if q.enqueueChan == nil {
-		return SubscribeFailedNoOpenErr
+		return ErrSubscribeFailedNoOpenErr
 	}
 
 	if q.subscriber != nil {
-		return SubscribeExistErr
+		return ErrSubscribeExistErr
 	}
 	q.subscriber = fn
 	go q.doLoopSubscribe()
