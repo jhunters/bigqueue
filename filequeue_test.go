@@ -52,6 +52,37 @@ func TestFileQueue_Open(t *testing.T) {
 	}
 }
 
+// TestFileQueue_Open to test open file without any error and check the initial size
+func TestFileQueue_OpenTwice(t *testing.T) {
+	path := Tempfile()
+	defer clearFiles(path, "testqueue")
+
+	var queue = new(FileQueue)
+
+	err := queue.Open(path, "testqueue", nil)
+
+	if err != nil {
+		t.Error(err)
+	}
+	defer queue.Close()
+
+	// open again will return error
+	err = queue.Open(path, "testqueue", nil)
+	if err == nil {
+		t.Error("open twice should return error, but actually return nil")
+	}
+
+	sz := queue.Size()
+	if sz != 0 {
+		t.Error("Init queue size must be zero, but now is", sz)
+	}
+
+	empty := queue.IsEmpty()
+	if !empty {
+		t.Error("Init queue must be empty, but now is not empty")
+	}
+}
+
 // TestFileQueue_Enqueue to test enqueue function
 func TestFileQueue_Enqueue(t *testing.T) {
 	path := Tempfile()

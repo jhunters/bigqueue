@@ -25,6 +25,8 @@ type FileFanoutQueue struct {
 	queueGetLock sync.Mutex
 
 	path string
+
+	opened bool
 }
 
 // QueueFront queue front struct
@@ -47,6 +49,12 @@ type QueueFront struct {
 
 // Open the queue files
 func (q *FileFanoutQueue) Open(dir string, queueName string, options *Options) error {
+
+	if !q.opened {
+		q.opened = true
+	} else {
+		return errors.New("FileFanoutQueue already opened")
+	}
 
 	q.fileQueue = &FileQueue{}
 
@@ -99,6 +107,8 @@ func (q *FileFanoutQueue) Close() {
 		}
 		v.fanoutDatafile = nil
 	}
+
+	q.opened = false
 }
 
 // Enqueue Append an item to the queue and return index no

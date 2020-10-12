@@ -19,6 +19,23 @@ func TestFanoutQueueOpen(t *testing.T) {
 	fq.Close()
 }
 
+// TestFanoutQueueOpen to test Open() function
+func TestFanoutQueueOpenTwice(t *testing.T) {
+	path := Tempfile()
+	defer clearFiles(path, "fanoutqueue")
+	fq := FileFanoutQueue{}
+	err := fq.Open(path, "fanoutqueue", nil)
+	if err != nil {
+		t.Error("open fanout queue failed", err)
+	}
+
+	err = fq.Open(path, "fanoutqueue", nil)
+	if err == nil {
+		t.Error("open fanout queue twice should return error but actually return nil")
+	}
+	fq.Close()
+}
+
 // TestFanoutQueueIsEmpty to test open a empty directory should return empty queue
 func TestFanoutQueueIsEmpty(t *testing.T) {
 	path := Tempfile()

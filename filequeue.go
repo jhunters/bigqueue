@@ -98,6 +98,8 @@ type FileQueue struct {
 	gcLock sync.Mutex
 
 	autoGCQuit chan int
+
+	opened bool
 }
 
 // Open the queue files
@@ -108,6 +110,12 @@ func (q *FileQueue) Open(dir string, queueName string, options *Options) error {
 
 	if len(queueName) == 0 {
 		return errors.New("Parameter 'queueName' can not be blank")
+	}
+
+	if !q.opened {
+		q.opened = true
+	} else {
+		return errors.New("FileQueue already opened")
 	}
 
 	if options == nil {
@@ -532,6 +540,7 @@ func (q *FileQueue) Close() error {
 		q.dataFile.Close()
 	}
 
+	q.opened = false
 	return nil
 }
 
@@ -640,9 +649,10 @@ func (q *FileQueue) autoGC() {
 				q.Gc()
 			case <-q.autoGCQuit:
 				ticker.Stop()
-				return
+				goto exit
 			}
 		}
+	exit:
 		log.Println("Auto gc goroutine exit to end")
 	}()
 }
