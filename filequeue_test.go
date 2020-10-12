@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// TestFileQueue_OpenError to test Open function which without required parameters.
 func TestFileQueue_OpenError(t *testing.T) {
 	path := Tempfile()
 	defer clearFiles(path, "testqueue")
@@ -26,6 +27,7 @@ func TestFileQueue_OpenError(t *testing.T) {
 	defer queue.Close()
 }
 
+// TestFileQueue_Open to test open file without any error and check the initial size
 func TestFileQueue_Open(t *testing.T) {
 	path := Tempfile()
 	defer clearFiles(path, "testqueue")
@@ -50,6 +52,7 @@ func TestFileQueue_Open(t *testing.T) {
 	}
 }
 
+// TestFileQueue_Enqueue to test enqueue function
 func TestFileQueue_Enqueue(t *testing.T) {
 	path := Tempfile()
 	defer clearFiles(path, "testqueue")
@@ -65,6 +68,7 @@ func TestFileQueue_Enqueue(t *testing.T) {
 	enqueue(queue, []byte("hello xiemalin"), 10, t)
 }
 
+// TestFileQueue_DequeueEmpty to test dequeue item from an empty queue
 func TestFileQueue_DequeueEmpty(t *testing.T) {
 	path := Tempfile()
 	defer clearFiles(path, "testqueue")
@@ -82,6 +86,7 @@ func TestFileQueue_DequeueEmpty(t *testing.T) {
 
 }
 
+// TestFileQueue_EnqueueDequeue to test enqueue and dequeue
 func TestFileQueue_EnqueueDequeue(t *testing.T) {
 	path := Tempfile()
 	defer clearFiles(path, "testqueue")
@@ -103,6 +108,7 @@ func TestFileQueue_EnqueueDequeue(t *testing.T) {
 
 }
 
+// TestFileQueue_Skip to test skip function
 func TestFileQueue_Skip(t *testing.T) {
 	path := Tempfile()
 	defer clearFiles(path, "testqueue")
@@ -126,6 +132,7 @@ func TestFileQueue_Skip(t *testing.T) {
 
 }
 
+// TestFileQueue_Peek to test peek item function
 func TestFileQueue_Peek(t *testing.T) {
 	path := Tempfile()
 	defer clearFiles(path, "testqueue")
@@ -163,6 +170,7 @@ func TestFileQueue_Peek(t *testing.T) {
 
 }
 
+// TestFileQueue_Gc to test gc func after enqueue and dequeue process
 func TestFileQueue_Gc(t *testing.T) {
 	path := Tempfile()
 	defer clearFiles(path, "testqueue")
@@ -187,6 +195,7 @@ func TestFileQueue_Gc(t *testing.T) {
 
 }
 
+// TestFileQueue_AutoGc to test automatic gc function while on enqueue and dequeue process
 func TestFileQueue_AutoGc(t *testing.T) {
 	path := Tempfile()
 	defer clearFiles(path, "testqueue")
@@ -212,6 +221,7 @@ func TestFileQueue_AutoGc(t *testing.T) {
 	time.Sleep(2 * time.Second)
 }
 
+// TestFileQueue_Subscribe to test subscribe function
 func TestFileQueue_Subscribe(t *testing.T) {
 	path := Tempfile()
 	defer clearFiles(path, "testqueue")
@@ -252,6 +262,7 @@ func TestFileQueue_Subscribe(t *testing.T) {
 
 }
 
+// TestFileQueue_FreeSubscribe to test free subscribe function
 func TestFileQueue_FreeSubscribe(t *testing.T) {
 	path := Tempfile()
 	defer clearFiles(path, "testqueue")

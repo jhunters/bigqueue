@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// TestFanoutQueueOpen to test Open() function
 func TestFanoutQueueOpen(t *testing.T) {
 	path := Tempfile()
 	defer clearFiles(path, "fanoutqueue")
@@ -18,6 +19,7 @@ func TestFanoutQueueOpen(t *testing.T) {
 	fq.Close()
 }
 
+// TestFanoutQueueIsEmpty to test open a empty directory should return empty queue
 func TestFanoutQueueIsEmpty(t *testing.T) {
 	path := Tempfile()
 	defer clearFiles(path, "fanoutqueue")
@@ -38,6 +40,7 @@ func TestFanoutQueueIsEmpty(t *testing.T) {
 	}
 }
 
+// TestFanoutQueueSize to test queue Size() function
 func TestFanoutQueueSize(t *testing.T) {
 	path := Tempfile()
 	defer clearFiles(path, "fanoutqueue")
@@ -59,6 +62,7 @@ func TestFanoutQueueSize(t *testing.T) {
 	}
 }
 
+// TestFanoutQueueEnqueue to test enqueue only function
 func TestFanoutQueueEnqueue(t *testing.T) {
 	path := Tempfile()
 	defer clearFiles(path, "fanoutqueue")
@@ -98,6 +102,7 @@ func clearFrontIndexFiles(path, queueName string, fanoutID int64) {
 	RemoveFiles(path + "/" + queueName + "/" + FanoutFrontFileName + strconv.Itoa(int(fanoutID)))
 }
 
+// TestFanoutQueueEnqueueDequeue to test enqueue and dequeue function
 func TestFanoutQueueEnqueueDequeue(t *testing.T) {
 	path := Tempfile()
 	defer clearFiles(path, "fanoutqueue")
@@ -131,6 +136,7 @@ func TestFanoutQueueEnqueueDequeue(t *testing.T) {
 	}
 }
 
+// TestFanoutQueueEnqueuePeek to test Peek() function
 func TestFanoutQueueEnqueuePeek(t *testing.T) {
 	path := Tempfile()
 	defer clearFiles(path, "fanoutqueue")
@@ -165,6 +171,7 @@ func TestFanoutQueueEnqueuePeek(t *testing.T) {
 	}
 }
 
+// TestFanoutQueueSkip to test Skip() function
 func TestFanoutQueueSkip(t *testing.T) {
 	path := Tempfile()
 	defer clearFiles(path, "fanoutqueue")
@@ -203,6 +210,7 @@ func TestFanoutQueueSkip(t *testing.T) {
 	}
 }
 
+// TestFanoutQueueSubscribe to test Subscribe() function with multiple subscriber ids
 func TestFanoutQueueSubscribe(t *testing.T) {
 
 	path := Tempfile()
