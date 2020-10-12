@@ -233,8 +233,8 @@ func TestFileQueue_Subscribe(t *testing.T) {
 		i++
 	})
 	// here should err
-	if err != SubscribeFailedNoOpenErr {
-		t.Error("Subscribe shoule return err before queue opened.")
+	if err != ErrSubscribeFailedNoOpenErr {
+		t.Error("Subscribe shoule return err before queue opened")
 	}
 
 	err = queue.Open(path, "testqueue", nil)
