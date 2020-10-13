@@ -137,7 +137,7 @@ func (db *DB) Path() string {
 
 // GoString returns the Go string representation of the database.
 func (db *DB) GoString() string {
-	return fmt.Sprintf("bolt.DB{path:%q}", db.path)
+	return fmt.Sprintf("bigqueue.DB{path:%q}", db.path)
 }
 
 // Close releases all resources.
