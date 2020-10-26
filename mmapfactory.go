@@ -89,13 +89,13 @@ func (f *DBFactory) removeBeforeIndex(index int64) error {
 	f.lock.Lock()
 	defer f.lock.Unlock()
 
-	for k, v := range f.dbMap {
-		if int64(k) < index {
-			log.Println("Do delete index db file by gc. no=", k)
+	for idx, db := range f.dbMap {
+		if int64(idx) < index {
+			log.Println("Do delete index db file by gc. no=", idx)
 
-			v.Close()
-			os.Remove(f.getFilePath(k))
-			delete(f.dbMap, k)
+			db.Close()
+			os.Remove(f.getFilePath(idx))
+			delete(f.dbMap, idx)
 		}
 	}
 

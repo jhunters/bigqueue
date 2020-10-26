@@ -248,7 +248,7 @@ func (q *QueueFront) open(path string) error {
 		return err
 	}
 	q.frontIndex = BytesToInt(q.fanoutDatafile.data[:defaultFrontPageSize])
-	Assert(q.frontIndex >= 0, "front index can not be negetive number. value is %v", q.frontIndex)
+	Assert(q.frontIndex >= 0, "front index can not be a negetive number. value is %v", q.frontIndex)
 
 	return nil
 }
