@@ -1,5 +1,6 @@
 package bigqueue
 
+// Queue inteface to define the all necessary functions
 type Queue interface {
 	Open(dir string, queueName string, options *Options) error
 
