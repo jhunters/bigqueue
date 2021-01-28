@@ -96,7 +96,7 @@ func TestFileQueue_Enqueue(t *testing.T) {
 	}
 	defer queue.Close()
 
-	enqueue(queue, []byte("hello xiemalin"), 10, t)
+	enqueue(queue, []byte("hello xiemalin中文"), 10, t)
 }
 
 // TestFileQueue_DequeueEmpty to test dequeue item from an empty queue
@@ -131,9 +131,9 @@ func TestFileQueue_EnqueueDequeue(t *testing.T) {
 	}
 	defer queue.Close()
 
-	enqueue(queue, []byte("hello xiemalin"), 10, t)
+	enqueue(queue, []byte("hello xiemalin中文"), 10, t)
 
-	dequeue(queue, []byte("hello xiemalin"), 10, t)
+	dequeue(queue, []byte("hello xiemalin中文"), 10, t)
 	// to check there are no message avaiable
 	dequeueEmpty(queue, t)
 
@@ -153,11 +153,11 @@ func TestFileQueue_Skip(t *testing.T) {
 	}
 	defer queue.Close()
 
-	enqueue(queue, []byte("hello xiemalin"), 10, t)
+	enqueue(queue, []byte("hello xiemalin中文"), 10, t)
 
 	queue.Skip(5)
 
-	dequeue(queue, []byte("hello xiemalin"), 5, t)
+	dequeue(queue, []byte("hello xiemalin中文"), 5, t)
 	// to check there are no message avaiable
 	dequeueEmpty(queue, t)
 
@@ -191,7 +191,7 @@ func TestFileQueue_Peek(t *testing.T) {
 		t.Error("Error peek to an empty queue should return nil, but actually is ", bb)
 	}
 
-	enqueue(queue, []byte("hello xiemalin"), 10, t)
+	enqueue(queue, []byte("hello xiemalin中文"), 10, t)
 
 	index, bb, err = queue.Peek()
 	index2, bb2, err2 := queue.Peek()
@@ -220,8 +220,8 @@ func TestFileQueue_Gc(t *testing.T) {
 	}
 	defer queue.Close()
 
-	enqueue(queue, []byte("hello xiemalin"), 500, t)
-	dequeue(queue, []byte("hello xiemalin"), 500, t)
+	enqueue(queue, []byte("hello xiemalin中文"), 500, t)
+	dequeue(queue, []byte("hello xiemalin中文"), 500, t)
 	queue.Gc()
 
 }
@@ -246,8 +246,8 @@ func TestFileQueue_AutoGc(t *testing.T) {
 	}
 	defer queue.Close()
 
-	doEnqueue(queue, []byte("hello xiemalin"), 500, t)
-	dequeue(queue, []byte("hello xiemalin"), 500, t)
+	doEnqueue(queue, []byte("hello xiemalin中文"), 500, t)
+	dequeue(queue, []byte("hello xiemalin中文"), 500, t)
 
 	time.Sleep(2 * time.Second)
 }
@@ -281,7 +281,7 @@ func TestFileQueue_Subscribe(t *testing.T) {
 
 	sz := 10
 
-	doEnqueue(queue, []byte("hello xiemalin"), sz, t)
+	doEnqueue(queue, []byte("hello xiemalin中文"), sz, t)
 
 	time.Sleep(time.Duration(2) * time.Second)
 
@@ -315,7 +315,7 @@ func TestFileQueue_FreeSubscribe(t *testing.T) {
 	queue.FreeSubscribe()
 	sz := 10
 	// no longer receive subscrbie callback
-	enqueue(queue, []byte("hello xiemalin"), sz, t)
+	enqueue(queue, []byte("hello xiemalin中文"), sz, t)
 
 	if i != 0 {
 		t.Error("subscribe count should be 0,  but actually is ", i)

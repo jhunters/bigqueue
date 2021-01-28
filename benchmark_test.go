@@ -6,7 +6,7 @@ import (
 )
 
 //在当前目录下，运行以及命令
-//go test -bench=. -benchtime=3s -run=^$
+//go test -bench . -benchtime=3s -run=^$
 // 输出如下
 // BenchmarkSprintf-8      50000000               109 ns/op
 // 看到函数后面的-8了吗？这个表示运行时对应的GOMAXPROCS的值。

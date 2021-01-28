@@ -268,11 +268,11 @@ func TestFanoutQueueSubscribe(t *testing.T) {
 	time.Sleep(time.Duration(2) * time.Second)
 
 	if fanoutIDCount1 != count {
-		t.Error("subscribe ", fanoutID, " count should be ", count, " but actually is ", fanoutIDCount1)
+		t.Error("subscribe id=", fanoutID, " count should be ", count, " but actually is ", fanoutIDCount1)
 	}
 
 	if fanoutIDCount2 != count {
-		t.Error("subscribe ", fanoutID1, " count should be ", count, " but actually is ", fanoutIDCount2)
+		t.Error("subscribe id=", fanoutID1, " count should be ", count, " but actually is ", fanoutIDCount2)
 	}
 
 }

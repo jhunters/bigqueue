@@ -90,7 +90,7 @@ func main() {
 
 ## Benmark test
 ```sh
-$ go test -bench=. -benchtime=3s -run=^$
+$ go test -bench . -benchtime=3s -run=^$
 ```
 
 ```property
