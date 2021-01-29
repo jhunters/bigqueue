@@ -8,7 +8,7 @@ import (
 	"github.com/jhunters/bigqueue"
 )
 
-func mainSubscrib() {
+func main() {
 	var queue = new(bigqueue.FileQueue)
 
 	// use custom options

@@ -1,4 +1,4 @@
-module async
+module subscribe
 
 go 1.13
 

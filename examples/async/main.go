@@ -43,5 +43,4 @@ func main() {
 	queue.Gc()
 
 	queue.Close()
-
 }
