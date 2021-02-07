@@ -15,7 +15,6 @@ func main() {
 	// use custom options
 	var DefaultOptions = &bigqueue.Options{
 		DataPageSize:      bigqueue.DefaultDataPageSize,
-		GcLock:            false,
 		IndexItemsPerPage: bigqueue.DefaultIndexItemsPerPage,
 	}
 
