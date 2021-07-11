@@ -153,6 +153,17 @@ func (q *FileFanoutQueue) Peek(fanoutID int64) (int64, []byte, error) {
 	return index, data, nil
 }
 
+// // PeekAll Retrieves all the items from the front of a queue
+func (q *FileFanoutQueue) PeekAll(fanoutID int64) ([][]byte, error) {
+	qf, err := q.getQueueFront(fanoutID)
+	if err != nil {
+		return nil, err
+	}
+	index := qf.frontIndex
+
+	return q.fileQueue.peekAll(index, q.Size(fanoutID))
+}
+
 // Skip To skip deqeue target number of items
 func (q *FileFanoutQueue) Skip(fanoutID int64, count int64) error {
 	if count <= 0 {

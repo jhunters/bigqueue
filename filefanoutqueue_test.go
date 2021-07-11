@@ -186,6 +186,16 @@ func TestFanoutQueueEnqueuePeek(t *testing.T) {
 	if strings.Compare(string(data), string(data1)) != 0 {
 		t.Error("data should same")
 	}
+
+	// test peek all
+	dataAll, err := fq.PeekAll(fanoutID)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if len(dataAll) != 1 {
+		t.Error("peek All size error should be", 1, "but actual is ", len(dataAll))
+	}
 }
 
 // TestFanoutQueueSkip to test Skip() function

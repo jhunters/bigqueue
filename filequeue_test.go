@@ -322,6 +322,32 @@ func TestFileQueue_FreeSubscribe(t *testing.T) {
 	}
 }
 
+// TestFileQueue_PeekAll
+func TestFileQueue_PeekAll(t *testing.T) {
+	path := Tempfile()
+	defer clearFiles(path, "testqueue")
+
+	var queue = new(FileQueue)
+
+	err := queue.Open(path, "testqueue", nil)
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer queue.Close()
+
+	sz := 10
+	// no longer receive subscrbie callback
+	enqueue(queue, []byte("hello xiemalin中文"), sz, t)
+
+	r, err := queue.PeekAll()
+	if err != nil {
+		t.Error(err)
+	}
+	if len(r) != 10 {
+		t.Error("Peek all should return size ", sz)
+	}
+}
+
 // tempfile returns a temporary file path.
 func Tempfile() string {
 	return "./bin/temp"

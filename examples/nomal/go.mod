@@ -1,5 +1,3 @@
-module normal
+module github.com/jhunters/bigqueue
 
 go 1.13
-
-require github.com/jhunters/bigqueue v1.0.1 // indirect

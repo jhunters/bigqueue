@@ -313,10 +313,25 @@ func (q *FileQueue) Peek() (int64, []byte, error) {
 	if q.IsEmpty() {
 		return -1, nil, nil
 	}
-	index := q.frontIndex
+	q.lock.RLock()
+	defer q.lock.RUnlock()
 
+	index := q.frontIndex
 	bb, err := q.peek(index)
 	return index, bb, err
+}
+
+// PeekAll Retrieves all the items from the front of a queue
+func (q *FileQueue) PeekAll() ([][]byte, error) {
+	if q.IsEmpty() {
+		return nil, nil
+	}
+
+	q.lock.RLock()
+	defer q.lock.RUnlock()
+	index := q.frontIndex
+
+	return q.peekAll(index, q.Size())
 }
 
 // Skip the target n items to front index
@@ -342,9 +357,6 @@ func (q *FileQueue) Skip(count int64) error {
 // peek item from the queue
 func (q *FileQueue) peek(index int64) ([]byte, error) {
 	// get the queue message from the index
-	q.lock.RLock()
-	defer q.lock.RUnlock()
-
 	err := q.validateIndex(index)
 	if err != nil {
 		return nil, err
@@ -363,9 +375,23 @@ func (q *FileQueue) peek(index int64) ([]byte, error) {
 		return nil, err
 	}
 
-	ret := make([]byte, dataItemOffset+dataItemLength-dataItemOffset)
+	ret := make([]byte, dataItemLength)
 	copy(ret, dataDB.data[dataItemOffset:])
 	return ret, nil
+}
+
+// peek all items from the queue
+func (q *FileQueue) peekAll(index int64, size int64) ([][]byte, error) {
+	result := make([][]byte, size)
+	for i := 0; i < int(size); i++ {
+		bb, err := q.peek(index)
+		if err != nil {
+			return nil, err
+		}
+		result[i] = bb
+		index++
+	}
+	return result, nil
 }
 
 func (q *FileQueue) validateIndex(index int64) error {
