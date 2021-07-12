@@ -70,12 +70,23 @@ Check current queue is empty.
 **Peek and Dequeue**: <br>
 The peek method just let you peek item at the front of the queue without removing the item from the queue:
 ```go
+    // peek one
     fanoutID := int64(100)
 	index, data, err := fanoutqueue.Peek(fanoutID) 
 	if err != nil {
 		// print err
 	}
 ```
+
+```go
+	// peek all
+    fanoutID := int64(100)
+	data, err := fanoutqueue.PeekAll(fanoutID) // type of data is [][]byte
+	if err != nil {
+		// print err
+	}
+```
+
 
 To remove or consume item from the queue, just call the dequeue method, here we dequeue 1 items from the queue:
 ```go

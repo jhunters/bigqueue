@@ -65,7 +65,16 @@ Check current queue is empty.
 **Peek and Dequeue**: <br>
 The peek method just let you peek item at the front of the queue without removing the item from the queue:
 ```go
+    // peek one
 	index, data, err := queue.Peek() 
+	if err != nil {
+		// print err
+	}
+```
+
+```go
+    // peek all
+	data, err := queue.PeekAll()  // type of data is [][]byte
 	if err != nil {
 		// print err
 	}
