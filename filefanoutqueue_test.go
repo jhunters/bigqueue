@@ -5,6 +5,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	. "github.com/smartystreets/goconvey/convey"
 )
 
 // TestFanoutQueueOpen to test Open() function
@@ -284,5 +286,77 @@ func TestFanoutQueueSubscribe(t *testing.T) {
 	if fanoutIDCount2 != count {
 		t.Error("subscribe id=", fanoutID1, " count should be ", count, " but actually is ", fanoutIDCount2)
 	}
+
+}
+
+// TestFileQueue_Status
+func TestFanoutQueue_Status(t *testing.T) {
+	Convey("Test empty queue status result", t, func() {
+		path := Tempfile()
+		defer clearFiles(path, "testqueue")
+		fanoutID := int64(100)
+
+		defer clearFrontIndexFiles(path, "fanoutqueue", fanoutID)
+
+		queue := FileFanoutQueue{}
+		err := queue.Open(path, "fanoutqueue", nil)
+
+		if err != nil {
+			t.Error("open fanout queue failed", err)
+		}
+		defer queue.Close()
+
+		qFileStatus := queue.Status(fanoutID)
+
+		So(qFileStatus, ShouldNotBeNil)
+		So(qFileStatus.FrontIndex, ShouldEqual, 0)
+		So(qFileStatus.HeadIndex, ShouldEqual, 0)
+		So(qFileStatus.TailIndex, ShouldEqual, 0)
+		So(qFileStatus.HeadDataPageIndex, ShouldEqual, 0)
+		So(qFileStatus.HeadDataItemOffset, ShouldEqual, 0)
+
+		So(qFileStatus.IndexFileList, ShouldBeEmpty)
+		So(qFileStatus.DataFileList, ShouldBeEmpty)
+		So(qFileStatus.MetaFileInfo, ShouldNotBeNil)
+		So(qFileStatus.FrontFileInfo, ShouldNotBeNil)
+
+	})
+
+	Convey("Test non-empty queue status result", t, func() {
+		path := Tempfile()
+		defer clearFiles(path, "testqueue")
+		fanoutID := int64(100)
+
+		defer clearFrontIndexFiles(path, "fanoutqueue", fanoutID)
+
+		queue := FileFanoutQueue{}
+		err := queue.Open(path, "fanoutqueue", nil)
+
+		if err != nil {
+			t.Error("open fanout queue failed", err)
+		}
+		defer queue.Close()
+
+		data := []byte("hello xmatthew")
+		dataLen := len(data)
+
+		queue.Enqueue(data)
+		queue.Dequeue(fanoutID)
+
+		qFileStatus := queue.Status(fanoutID)
+
+		So(qFileStatus, ShouldNotBeNil)
+		So(qFileStatus.FrontIndex, ShouldEqual, 1)
+		So(qFileStatus.HeadIndex, ShouldEqual, 1)
+		So(qFileStatus.TailIndex, ShouldEqual, 0)
+		So(qFileStatus.HeadDataPageIndex, ShouldEqual, 0)
+		So(qFileStatus.HeadDataItemOffset, ShouldEqual, dataLen)
+
+		So(len(qFileStatus.IndexFileList), ShouldEqual, 1)
+		So(len(qFileStatus.DataFileList), ShouldEqual, 1)
+		So(qFileStatus.MetaFileInfo, ShouldNotBeNil)
+		So(qFileStatus.FrontFileInfo, ShouldNotBeNil)
+
+	})
 
 }

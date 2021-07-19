@@ -102,14 +102,81 @@ type FileQueue struct {
 	opened bool
 }
 
+// status info of queue files
+type QueueFilesStatus struct {
+	// front index of the big queue,
+	FrontIndex int64
+
+	// head index of the array, this is the read write barrier.
+	// readers can only read items before this index, and writes can write this index or after
+	HeadIndex int64
+
+	// tail index of the array,
+	// readers can't read items before this tail
+	TailIndex int64
+
+	// head index of the data page, this is the to be appended data page index
+	HeadDataPageIndex int64
+
+	// head offset of the data page, this is the to be appended data offset
+	HeadDataItemOffset int64
+
+	IndexFileList []*QueueFileInfo
+	DataFileList  []*QueueFileInfo
+	MetaFileInfo  *QueueFileInfo
+	FrontFileInfo *QueueFileInfo
+}
+
+// queue file info
+type QueueFileInfo struct {
+	Name string
+	Path string
+	Size int64
+}
+
+// Status get status info from current queue
+func (q *FileQueue) Status() *QueueFilesStatus {
+	result := QueueFilesStatus{FrontIndex: q.frontIndex, HeadIndex: q.headIndex, TailIndex: q.tailIndex,
+		HeadDataPageIndex: q.headDataPageIndex, HeadDataItemOffset: q.headDataItemOffset}
+
+	result.IndexFileList = wrapFileInfos(q.indexFile)
+	result.DataFileList = wrapFileInfos(q.dataFile)
+	result.MetaFileInfo, _ = wrapFileInfo(q.metaFile)
+	result.FrontFileInfo, _ = wrapFileInfo(q.frontFile)
+	return &result
+
+}
+
+// wrapFileInfos wrap queue file info from DBFactory
+func wrapFileInfos(factory *DBFactory) []*QueueFileInfo {
+	indexFileInfos := make([]*QueueFileInfo, len(factory.dbMap))
+	for idx, db := range factory.dbMap {
+		info, err := wrapFileInfo(db)
+		if err == nil {
+			indexFileInfos[idx] = info
+		}
+	}
+	return indexFileInfos
+}
+
+// wrapFileInfo wrap queue file info from DB
+func wrapFileInfo(db *DB) (*QueueFileInfo, error) {
+	finfo, err := db.file.Stat()
+	if err != nil {
+		return nil, err
+	}
+	result := &QueueFileInfo{Name: db.file.Name(), Path: db.path, Size: int64(finfo.Size())}
+	return result, nil
+}
+
 // Open the queue files
 func (q *FileQueue) Open(dir string, queueName string, options *Options) error {
 	if len(dir) == 0 {
-		return errors.New("Parameter 'dir' can not be blank")
+		return errors.New("parameter 'dir' can not be blank")
 	}
 
 	if len(queueName) == 0 {
-		return errors.New("Parameter 'queueName' can not be blank")
+		return errors.New("parameter 'queueName' can not be blank")
 	}
 
 	if !q.opened {

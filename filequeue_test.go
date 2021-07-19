@@ -5,6 +5,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	. "github.com/smartystreets/goconvey/convey"
 )
 
 // TestFileQueue_OpenError to test Open function which without required parameters.
@@ -346,6 +348,79 @@ func TestFileQueue_PeekAll(t *testing.T) {
 	if len(r) != 10 || len(indexs) != 10 {
 		t.Error("Peek all should return size ", sz)
 	}
+}
+
+// TestFileQueue_Status
+func TestFileQueue_Status(t *testing.T) {
+	Convey("Test empty queue status result", t, func() {
+		path := Tempfile()
+		defer clearFiles(path, "testqueue")
+
+		var queue = new(FileQueue)
+
+		err := queue.Open(path, "testqueue", nil)
+		if err != nil {
+			t.Error(err)
+		}
+		defer queue.Close()
+
+		qFileStatus := queue.Status()
+
+		So(qFileStatus, ShouldNotBeNil)
+		So(qFileStatus.FrontIndex, ShouldEqual, 0)
+		So(qFileStatus.HeadIndex, ShouldEqual, 0)
+		So(qFileStatus.TailIndex, ShouldEqual, 0)
+		So(qFileStatus.HeadDataPageIndex, ShouldEqual, 0)
+		So(qFileStatus.HeadDataItemOffset, ShouldEqual, 0)
+
+		So(qFileStatus.IndexFileList, ShouldBeEmpty)
+		So(qFileStatus.DataFileList, ShouldBeEmpty)
+		So(qFileStatus.MetaFileInfo, ShouldNotBeNil)
+		So(qFileStatus.FrontFileInfo, ShouldNotBeNil)
+
+	})
+
+	Convey("Test non-empty queue status result", t, func() {
+		path := Tempfile()
+		defer clearFiles(path, "testqueue")
+
+		var queue = new(FileQueue)
+
+		err := queue.Open(path, "testqueue", nil)
+		if err != nil {
+			t.Error(err)
+		}
+		defer queue.Close()
+
+		data := []byte("hello xmatthew")
+		dataLen := len(data)
+
+		queue.Enqueue(data)
+		queue.Dequeue()
+
+		qFileStatus := queue.Status()
+
+		So(qFileStatus, ShouldNotBeNil)
+		So(qFileStatus.FrontIndex, ShouldEqual, 1)
+		So(qFileStatus.HeadIndex, ShouldEqual, 1)
+		So(qFileStatus.TailIndex, ShouldEqual, 0)
+		So(qFileStatus.HeadDataPageIndex, ShouldEqual, 0)
+		So(qFileStatus.HeadDataItemOffset, ShouldEqual, dataLen)
+
+		So(len(qFileStatus.IndexFileList), ShouldEqual, 1)
+		So(len(qFileStatus.DataFileList), ShouldEqual, 1)
+		So(qFileStatus.MetaFileInfo, ShouldNotBeNil)
+		So(qFileStatus.FrontFileInfo, ShouldNotBeNil)
+
+		// after gc
+		queue.Enqueue(data)
+		queue.Dequeue()
+		queue.Gc()
+		qFileStatus = queue.Status()
+		So(qFileStatus.TailIndex, ShouldEqual, 1)
+
+	})
+
 }
 
 // tempfile returns a temporary file path.

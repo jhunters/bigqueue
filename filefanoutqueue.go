@@ -76,6 +76,23 @@ func (q *FileFanoutQueue) Open(dir string, queueName string, options *Options) e
 	return nil
 }
 
+// Status get status info from current queue
+func (q *FileFanoutQueue) Status(fanoutID int64) *QueueFilesStatus {
+	qf, err := q.getQueueFront(fanoutID)
+	if err != nil {
+		return nil
+	}
+
+	queueFilesStatus := q.fileQueue.Status()
+	if queueFilesStatus == nil {
+		return nil
+	}
+
+	queueFilesStatus.FrontIndex = qf.frontIndex
+
+	return queueFilesStatus
+}
+
 // IsEmpty test if target fanoutID is empty
 func (q *FileFanoutQueue) IsEmpty(fanoutID int64) bool {
 	qf, err := q.getQueueFront(fanoutID)
