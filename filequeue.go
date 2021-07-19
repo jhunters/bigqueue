@@ -129,9 +129,10 @@ type QueueFilesStatus struct {
 
 // queue file info
 type QueueFileInfo struct {
-	Name string
-	Path string
-	Size int64
+	Name      string
+	Path      string
+	Size      int64
+	FileIndex int64
 }
 
 // Status get status info from current queue
@@ -141,8 +142,8 @@ func (q *FileQueue) Status() *QueueFilesStatus {
 
 	result.IndexFileList = wrapFileInfos(q.indexFile)
 	result.DataFileList = wrapFileInfos(q.dataFile)
-	result.MetaFileInfo, _ = wrapFileInfo(q.metaFile)
-	result.FrontFileInfo, _ = wrapFileInfo(q.frontFile)
+	result.MetaFileInfo, _ = wrapFileInfo(0, q.metaFile)
+	result.FrontFileInfo, _ = wrapFileInfo(0, q.frontFile)
 	return &result
 
 }
@@ -150,22 +151,24 @@ func (q *FileQueue) Status() *QueueFilesStatus {
 // wrapFileInfos wrap queue file info from DBFactory
 func wrapFileInfos(factory *DBFactory) []*QueueFileInfo {
 	indexFileInfos := make([]*QueueFileInfo, len(factory.dbMap))
+	var i int64 = 0
 	for idx, db := range factory.dbMap {
-		info, err := wrapFileInfo(db)
+		info, err := wrapFileInfo(idx, db)
 		if err == nil {
-			indexFileInfos[idx] = info
+			indexFileInfos[i] = info
+			i++
 		}
 	}
 	return indexFileInfos
 }
 
 // wrapFileInfo wrap queue file info from DB
-func wrapFileInfo(db *DB) (*QueueFileInfo, error) {
+func wrapFileInfo(fileIndex int64, db *DB) (*QueueFileInfo, error) {
 	finfo, err := db.file.Stat()
 	if err != nil {
 		return nil, err
 	}
-	result := &QueueFileInfo{Name: db.file.Name(), Path: db.path, Size: int64(finfo.Size())}
+	result := &QueueFileInfo{Name: db.file.Name(), Path: db.path, Size: int64(finfo.Size()), FileIndex: fileIndex}
 	return result, nil
 }
 
