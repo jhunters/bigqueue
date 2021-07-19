@@ -154,10 +154,11 @@ func (q *FileFanoutQueue) Peek(fanoutID int64) (int64, []byte, error) {
 }
 
 // // PeekAll Retrieves all the items from the front of a queue
-func (q *FileFanoutQueue) PeekAll(fanoutID int64) ([][]byte, error) {
+// return array of data and array of index
+func (q *FileFanoutQueue) PeekAll(fanoutID int64) ([][]byte, []int64, error) {
 	qf, err := q.getQueueFront(fanoutID)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	index := qf.frontIndex
 

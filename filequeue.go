@@ -322,9 +322,10 @@ func (q *FileQueue) Peek() (int64, []byte, error) {
 }
 
 // PeekAll Retrieves all the items from the front of a queue
-func (q *FileQueue) PeekAll() ([][]byte, error) {
+// return array of data and array of index
+func (q *FileQueue) PeekAll() ([][]byte, []int64, error) {
 	if q.IsEmpty() {
-		return nil, nil
+		return nil, nil, nil
 	}
 
 	q.lock.RLock()
@@ -381,17 +382,19 @@ func (q *FileQueue) peek(index int64) ([]byte, error) {
 }
 
 // peek all items from the queue
-func (q *FileQueue) peekAll(index int64, size int64) ([][]byte, error) {
+func (q *FileQueue) peekAll(index int64, size int64) ([][]byte, []int64, error) {
 	result := make([][]byte, size)
+	indexs := make([]int64, size)
 	for i := 0; i < int(size); i++ {
 		bb, err := q.peek(index)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		result[i] = bb
+		indexs[i] = index
 		index++
 	}
-	return result, nil
+	return result, indexs, nil
 }
 
 func (q *FileQueue) validateIndex(index int64) error {

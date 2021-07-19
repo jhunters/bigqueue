@@ -188,12 +188,12 @@ func TestFanoutQueueEnqueuePeek(t *testing.T) {
 	}
 
 	// test peek all
-	dataAll, err := fq.PeekAll(fanoutID)
+	dataAll, indexAll, err := fq.PeekAll(fanoutID)
 	if err != nil {
 		t.Error(err)
 	}
 
-	if len(dataAll) != 1 {
+	if len(dataAll) != 1 || len(indexAll) != 1 {
 		t.Error("peek All size error should be", 1, "but actual is ", len(dataAll))
 	}
 }

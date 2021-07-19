@@ -339,11 +339,11 @@ func TestFileQueue_PeekAll(t *testing.T) {
 	// no longer receive subscrbie callback
 	enqueue(queue, []byte("hello xiemalin中文"), sz, t)
 
-	r, err := queue.PeekAll()
+	r, indexs, err := queue.PeekAll()
 	if err != nil {
 		t.Error(err)
 	}
-	if len(r) != 10 {
+	if len(r) != 10 || len(indexs) != 10 {
 		t.Error("Peek all should return size ", sz)
 	}
 }
