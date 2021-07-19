@@ -553,11 +553,11 @@ func (q *FileQueue) initDataPageIndex() error {
 		return err
 	}
 	previousDataPageIndex := BytesToInt(bb[:8])
-	previousDataItemOffset := BytesToInt(bb[9:12])
-	perviousDataItemLength := BytesToInt(bb[13:16])
+	previousDataItemOffset := BytesToInt32(bb[8:12])
+	perviousDataItemLength := BytesToInt32(bb[12:16])
 
 	q.headDataPageIndex = previousDataPageIndex
-	q.headDataItemOffset = previousDataItemOffset + perviousDataItemLength
+	q.headDataItemOffset = int64(previousDataItemOffset + perviousDataItemLength)
 
 	return nil
 
