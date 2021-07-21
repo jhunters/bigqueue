@@ -133,30 +133,60 @@ type QueueFileInfo struct {
 	Path      string
 	Size      int64
 	FileIndex int64
+	CanGC     bool
 }
 
 // Status get status info from current queue
 func (q *FileQueue) Status() *QueueFilesStatus {
-	result := QueueFilesStatus{FrontIndex: q.frontIndex, HeadIndex: q.headIndex, TailIndex: q.tailIndex,
-		HeadDataPageIndex: q.headDataPageIndex, HeadDataItemOffset: q.headDataItemOffset}
 
-	result.IndexFileList = wrapFileInfos(q.indexFile)
-	result.DataFileList = wrapFileInfos(q.dataFile)
-	result.MetaFileInfo, _ = wrapFileInfo(0, q.metaFile)
-	result.FrontFileInfo, _ = wrapFileInfo(0, q.frontFile)
-	return &result
+	indexPageIndex := q.frontIndex >> uint(q.options.IndexItemsPerPage)
+
+	bb, err := q.getIndexItemArray(q.frontIndex)
+	var dataPageIndex int64
+	if err != nil {
+		dataPageIndex = -1
+	} else {
+		dataPageIndex = BytesToInt(bb[:8])
+	}
+
+	r := q.status(q.frontIndex, indexPageIndex, dataPageIndex)
+
+	// gc status
+	return r
 
 }
 
+func (q *FileQueue) status(frontIndex, currentIndexPageIndex, currentDataPageIndex int64) *QueueFilesStatus {
+	result := QueueFilesStatus{FrontIndex: frontIndex, HeadIndex: q.headIndex, TailIndex: q.tailIndex,
+		HeadDataPageIndex: q.headDataPageIndex, HeadDataItemOffset: q.headDataItemOffset}
+
+	indexPageIndex := q.headIndex >> uint(q.options.IndexItemsPerPage)
+	result.IndexFileList = wrapFileInfos(q.indexFile, indexPageIndex, currentIndexPageIndex)
+
+	result.DataFileList = wrapFileInfos(q.dataFile, q.headDataPageIndex, currentDataPageIndex)
+	result.MetaFileInfo, _ = wrapFileInfo(0, q.metaFile)
+	result.FrontFileInfo, _ = wrapFileInfo(0, q.frontFile)
+	return &result
+}
+
 // wrapFileInfos wrap queue file info from DBFactory
-func wrapFileInfos(factory *DBFactory) []*QueueFileInfo {
-	indexFileInfos := make([]*QueueFileInfo, len(factory.dbMap))
-	var i int64 = 0
-	for idx, db := range factory.dbMap {
-		info, err := wrapFileInfo(idx, db)
+func wrapFileInfos(factory *DBFactory, maxFileNo, currentFileNo int64) []*QueueFileInfo {
+	indexFileInfos := make([]*QueueFileInfo, 0)
+	for i := maxFileNo; i >= 0; i-- {
+		filePath := factory.getFilePath(i)
+		_, err := os.Open(filePath)
+		if err != nil {
+			continue
+		}
+		db, err := factory.acquireDB(i)
 		if err == nil {
-			indexFileInfos[i] = info
-			i++
+			info, err := wrapFileInfo(i, db)
+			if i < currentFileNo {
+				info.CanGC = true
+			}
+			if err == nil {
+				indexFileInfos = append(indexFileInfos, info)
+			}
 		}
 	}
 	return indexFileInfos

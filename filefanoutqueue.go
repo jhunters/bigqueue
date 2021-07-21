@@ -83,12 +83,10 @@ func (q *FileFanoutQueue) Status(fanoutID int64) *QueueFilesStatus {
 		return nil
 	}
 
-	queueFilesStatus := q.fileQueue.Status()
+	queueFilesStatus := q.fileQueue.status(qf.frontIndex, -1, -1)
 	if queueFilesStatus == nil {
 		return nil
 	}
-
-	queueFilesStatus.FrontIndex = qf.frontIndex
 
 	return queueFilesStatus
 }

@@ -277,7 +277,7 @@ func TestFanoutQueueSubscribe(t *testing.T) {
 		fanoutIDCount2++
 	})
 
-	time.Sleep(time.Duration(2) * time.Second)
+	time.Sleep(time.Duration(3) * time.Second)
 
 	if fanoutIDCount1 != count {
 		t.Error("subscribe id=", fanoutID, " count should be ", count, " but actually is ", fanoutIDCount1)
@@ -293,7 +293,7 @@ func TestFanoutQueueSubscribe(t *testing.T) {
 func TestFanoutQueue_Status(t *testing.T) {
 	Convey("Test empty queue status result", t, func() {
 		path := Tempfile()
-		defer clearFiles(path, "testqueue")
+		defer clearFiles(path, "fanoutqueue")
 		fanoutID := int64(100)
 
 		defer clearFrontIndexFiles(path, "fanoutqueue", fanoutID)
@@ -315,8 +315,8 @@ func TestFanoutQueue_Status(t *testing.T) {
 		So(qFileStatus.HeadDataPageIndex, ShouldEqual, 0)
 		So(qFileStatus.HeadDataItemOffset, ShouldEqual, 0)
 
-		So(qFileStatus.IndexFileList, ShouldBeEmpty)
-		So(qFileStatus.DataFileList, ShouldBeEmpty)
+		So(len(qFileStatus.IndexFileList), ShouldEqual, 1)
+		So(len(qFileStatus.DataFileList), ShouldEqual, 1)
 		So(qFileStatus.MetaFileInfo, ShouldNotBeNil)
 		So(qFileStatus.FrontFileInfo, ShouldNotBeNil)
 
@@ -324,7 +324,7 @@ func TestFanoutQueue_Status(t *testing.T) {
 
 	Convey("Test non-empty queue status result", t, func() {
 		path := Tempfile()
-		defer clearFiles(path, "testqueue")
+		defer clearFiles(path, "fanoutqueue")
 		fanoutID := int64(100)
 
 		defer clearFrontIndexFiles(path, "fanoutqueue", fanoutID)
@@ -353,7 +353,15 @@ func TestFanoutQueue_Status(t *testing.T) {
 		So(qFileStatus.HeadDataItemOffset, ShouldEqual, dataLen)
 
 		So(len(qFileStatus.IndexFileList), ShouldEqual, 1)
+
+		fileInfo := qFileStatus.IndexFileList[0]
+		So(fileInfo.CanGC, ShouldBeFalse)
+		So(fileInfo.FileIndex, ShouldEqual, 0)
+
 		So(len(qFileStatus.DataFileList), ShouldEqual, 1)
+		fileInfo = qFileStatus.IndexFileList[0]
+		So(fileInfo.CanGC, ShouldBeFalse)
+		So(fileInfo.FileIndex, ShouldEqual, 0)
 		So(qFileStatus.MetaFileInfo, ShouldNotBeNil)
 		So(qFileStatus.FrontFileInfo, ShouldNotBeNil)
 

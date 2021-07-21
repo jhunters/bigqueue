@@ -373,8 +373,8 @@ func TestFileQueue_Status(t *testing.T) {
 		So(qFileStatus.HeadDataPageIndex, ShouldEqual, 0)
 		So(qFileStatus.HeadDataItemOffset, ShouldEqual, 0)
 
-		So(qFileStatus.IndexFileList, ShouldBeEmpty)
-		So(qFileStatus.DataFileList, ShouldBeEmpty)
+		So(len(qFileStatus.IndexFileList), ShouldEqual, 1)
+		So(len(qFileStatus.DataFileList), ShouldEqual, 1)
 		So(qFileStatus.MetaFileInfo, ShouldNotBeNil)
 		So(qFileStatus.FrontFileInfo, ShouldNotBeNil)
 
@@ -408,7 +408,15 @@ func TestFileQueue_Status(t *testing.T) {
 		So(qFileStatus.HeadDataItemOffset, ShouldEqual, dataLen)
 
 		So(len(qFileStatus.IndexFileList), ShouldEqual, 1)
+
+		fileInfo := qFileStatus.IndexFileList[0]
+		So(fileInfo.CanGC, ShouldBeFalse)
+		So(fileInfo.FileIndex, ShouldEqual, 0)
+
 		So(len(qFileStatus.DataFileList), ShouldEqual, 1)
+		fileInfo = qFileStatus.IndexFileList[0]
+		So(fileInfo.CanGC, ShouldBeFalse)
+		So(fileInfo.FileIndex, ShouldEqual, 0)
 		So(qFileStatus.MetaFileInfo, ShouldNotBeNil)
 		So(qFileStatus.FrontFileInfo, ShouldNotBeNil)
 

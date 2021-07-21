@@ -13,6 +13,7 @@ import (
 type DBFactory struct {
 	lockMap map[int64]*sync.Mutex
 
+	// DB mapping with file index no
 	dbMap map[int64]*DB
 
 	filePrefix string
