@@ -40,6 +40,8 @@ const (
 	fileSuffix = ".dat"
 
 	defaultFileMode = 0666
+
+	Default_Page_Size = 10
 )
 
 // DefaultOptions default options
@@ -433,6 +435,52 @@ func (q *FileQueue) PeekAll() ([][]byte, []int64, error) {
 	index := q.frontIndex
 
 	return q.peekAll(index, q.Size())
+}
+
+// PeekPagination to peek data from queue by paing feature.
+func (q *FileQueue) PeekPagination(page, pagesize uint64) ([][]byte, []int64, error) {
+	return q.peekPagination(q.frontIndex, q.Size(), page, pagesize)
+}
+
+// peekPagination to peek data from queue by paing feature.
+func (q *FileQueue) peekPagination(frontindex int64, size int64, page, pagesize uint64) ([][]byte, []int64, error) {
+	if page == 0 {
+		page = 1
+	}
+	if pagesize == 0 {
+		pagesize = Default_Page_Size
+	}
+
+	begin := (page - 1) * pagesize
+	end := begin + pagesize
+
+	if begin > uint64(size) { // no data return
+		return [][]byte{}, []int64{}, nil
+	}
+
+	if end > uint64(size) {
+		end = uint64(size)
+		pagesize = end - begin
+	}
+
+	// fix the offset
+	begin = begin + uint64(frontindex)
+	end = end + uint64(frontindex)
+
+	result := make([][]byte, pagesize)
+	indexs := make([]int64, pagesize)
+
+	var index int = 0
+	for i := begin; i < end; i++ {
+		bb, err := q.peek(int64(i))
+		if err != nil {
+			return nil, nil, err
+		}
+		result[index] = bb
+		indexs[index] = int64(i)
+		index++
+	}
+	return result, indexs, nil
 }
 
 // Skip the target n items to front index

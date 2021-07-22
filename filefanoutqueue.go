@@ -180,6 +180,18 @@ func (q *FileFanoutQueue) PeekAll(fanoutID int64) ([][]byte, []int64, error) {
 	return q.fileQueue.peekAll(index, q.Size(fanoutID))
 }
 
+// PeekPagination to peek data from queue by paing feature.
+func (q *FileFanoutQueue) PeekPagination(fanoutID int64, page, pagesize uint64) ([][]byte, []int64, error) {
+
+	qf, err := q.getQueueFront(fanoutID)
+	if err != nil {
+		return nil, nil, err
+	}
+	index := qf.frontIndex
+
+	return q.fileQueue.peekPagination(index, q.fileQueue.size(index), page, pagesize)
+}
+
 // Skip To skip deqeue target number of items
 func (q *FileFanoutQueue) Skip(fanoutID int64, count int64) error {
 	if count <= 0 {

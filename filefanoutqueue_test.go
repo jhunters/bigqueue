@@ -368,3 +368,63 @@ func TestFanoutQueue_Status(t *testing.T) {
 	})
 
 }
+
+func TestFanoutQueue_PeekPagination(t *testing.T) {
+	Convey("Test PeekPagination", t, func() {
+		path := Tempfile()
+		defer clearFiles(path, "fanoutqueue")
+		fanoutID := int64(100)
+
+		defer clearFrontIndexFiles(path, "fanoutqueue", fanoutID)
+
+		queue := FileFanoutQueue{}
+		err := queue.Open(path, "fanoutqueue", nil)
+		if err != nil {
+			t.Error(err)
+		}
+		defer queue.Close()
+
+		Convey("test PeekPagination on empty queue", func() {
+			data, indexs, err := queue.PeekPagination(fanoutID, 0, 0)
+			So(err, ShouldBeNil)
+			So(data, ShouldBeEmpty)
+			So(indexs, ShouldBeEmpty)
+
+			data, indexs, err = queue.PeekPagination(fanoutID, 1, 1)
+			So(err, ShouldBeNil)
+			So(data, ShouldBeEmpty)
+			So(indexs, ShouldBeEmpty)
+		})
+
+		Convey("test PeekPagination on items small than pagesize", func() {
+			for i := 0; i < 5; i++ { // add value
+				_, err := queue.Enqueue([]byte("hello matthew " + strconv.Itoa(i)))
+				So(err, ShouldBeNil)
+			}
+
+			data, indexs, err := queue.PeekPagination(fanoutID, 0, 0)
+			So(err, ShouldBeNil)
+			So(len(data), ShouldEqual, 5)
+			So(string(data[4]), ShouldEqual, "hello matthew 4")
+			So(len(indexs), ShouldEqual, 5)
+
+			data, indexs, err = queue.PeekPagination(fanoutID, 1, 10)
+			So(err, ShouldBeNil)
+			So(len(data), ShouldEqual, 5)
+			So(string(data[4]), ShouldEqual, "hello matthew 4")
+			So(len(indexs), ShouldEqual, 5)
+
+			data, indexs, err = queue.PeekPagination(fanoutID, 2, 10) // large paing
+			So(err, ShouldBeNil)
+			So(data, ShouldBeEmpty)
+			So(indexs, ShouldBeEmpty)
+
+			data, indexs, err = queue.PeekPagination(fanoutID, 2, 2)
+			So(err, ShouldBeNil)
+			So(len(data), ShouldEqual, 2)
+			So(string(data[1]), ShouldEqual, "hello matthew 3")
+			So(len(indexs), ShouldEqual, 2)
+		})
+
+	})
+}
