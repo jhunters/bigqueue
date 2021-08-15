@@ -31,6 +31,7 @@ func Benchmark_EnqueueOnly(b *testing.B) {
 	// init enqueue
 	bb := []byte("hello xiemalin! welcome to our world!")
 
+	b.ReportAllocs()
 	b.ResetTimer()
 	t := &testing.T{}
 	enqueue(queue, bb, b.N, t)
@@ -56,6 +57,7 @@ func Benchmark_DequeueOnly(b *testing.B) {
 	t := &testing.T{}
 	enqueue(queue, bb, b.N, t)
 
+	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		queue.Dequeue()
@@ -80,6 +82,7 @@ func Benchmark_EnqueueDequeue(b *testing.B) {
 
 	bb := []byte("hello xiemalin! welcome to our world!")
 
+	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		queue.Enqueue(bb)
@@ -101,6 +104,8 @@ func Benchmark_ParallelEnqueueDequeue(b *testing.B) {
 	}
 	defer queue.Close()
 	bb := []byte("hello xiemalin! welcome to our world!")
+	
+	b.ReportAllocs()
 	b.ResetTimer()
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
