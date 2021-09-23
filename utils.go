@@ -111,5 +111,6 @@ func RemoveFiles(pathname string) error {
 			return err
 		}
 	}
+	// os.RemoveAll(pathname)
 	return nil
 }

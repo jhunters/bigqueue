@@ -41,7 +41,7 @@ func TestFanoutQueueOpenTwice(t *testing.T) {
 // TestFanoutQueueIsEmpty to test open a empty directory should return empty queue
 func TestFanoutQueueIsEmpty(t *testing.T) {
 	path := Tempfile()
-	defer clearFiles(path, "fanoutqueue")
+	clearFiles(path, "fanoutqueue")
 	fanoutID := int64(100)
 	defer clearFrontIndexFiles(path, "fanoutqueue", fanoutID)
 
@@ -52,6 +52,7 @@ func TestFanoutQueueIsEmpty(t *testing.T) {
 		t.Error("open fanout queue failed", err)
 	}
 	defer fq.Close()
+	defer clearFiles(path, "fanoutqueue")
 
 	bool := fq.IsEmpty(fanoutID)
 	if !bool {
@@ -62,7 +63,7 @@ func TestFanoutQueueIsEmpty(t *testing.T) {
 // TestFanoutQueueSize to test queue Size() function
 func TestFanoutQueueSize(t *testing.T) {
 	path := Tempfile()
-	defer clearFiles(path, "fanoutqueue")
+	clearFiles(path, "fanoutqueue")
 	fanoutID := int64(100)
 	defer clearFrontIndexFiles(path, "fanoutqueue", fanoutID)
 
@@ -74,6 +75,7 @@ func TestFanoutQueueSize(t *testing.T) {
 	}
 
 	defer fq.Close()
+	defer clearFiles(path, "fanoutqueue")
 
 	sz := fq.Size(fanoutID)
 	if sz != 0 {
@@ -84,7 +86,7 @@ func TestFanoutQueueSize(t *testing.T) {
 // TestFanoutQueueEnqueue to test enqueue only function
 func TestFanoutQueueEnqueue(t *testing.T) {
 	path := Tempfile()
-	defer clearFiles(path, "fanoutqueue")
+	clearFiles(path, "fanoutqueue")
 	fanoutID := int64(100)
 	defer clearFrontIndexFiles(path, "fanoutqueue", fanoutID)
 
@@ -95,6 +97,7 @@ func TestFanoutQueueEnqueue(t *testing.T) {
 		t.Error("open fanout queue failed", err)
 	}
 	defer fq.Close()
+	defer clearFiles(path, "fanoutqueue")
 	sz := fq.Size(fanoutID)
 	if sz != 0 {
 		t.Error("New created queue size must be zero")
@@ -124,7 +127,7 @@ func clearFrontIndexFiles(path, queueName string, fanoutID int64) {
 // TestFanoutQueueEnqueueDequeue to test enqueue and dequeue function
 func TestFanoutQueueEnqueueDequeue(t *testing.T) {
 	path := Tempfile()
-	defer clearFiles(path, "fanoutqueue")
+	clearFiles(path, "fanoutqueue")
 	fanoutID := int64(100)
 	fanoutID1 := int64(101)
 	defer clearFrontIndexFiles(path, "fanoutqueue", fanoutID)
@@ -137,6 +140,7 @@ func TestFanoutQueueEnqueueDequeue(t *testing.T) {
 		t.Error("open fanout queue failed", err)
 	}
 	defer fq.Close()
+	defer clearFiles(path, "fanoutqueue")
 
 	_, err = fq.Enqueue([]byte("hello world"))
 
@@ -158,7 +162,7 @@ func TestFanoutQueueEnqueueDequeue(t *testing.T) {
 // TestFanoutQueueEnqueuePeek to test Peek() function
 func TestFanoutQueueEnqueuePeek(t *testing.T) {
 	path := Tempfile()
-	defer clearFiles(path, "fanoutqueue")
+	clearFiles(path, "fanoutqueue")
 	fanoutID := int64(100)
 	fanoutID1 := int64(101)
 	defer clearFrontIndexFiles(path, "fanoutqueue", fanoutID)
@@ -171,6 +175,7 @@ func TestFanoutQueueEnqueuePeek(t *testing.T) {
 		t.Error("open fanout queue failed", err)
 	}
 	defer fq.Close()
+	defer clearFiles(path, "fanoutqueue")
 
 	_, err = fq.Enqueue([]byte("hello world"))
 
@@ -203,7 +208,7 @@ func TestFanoutQueueEnqueuePeek(t *testing.T) {
 // TestFanoutQueueSkip to test Skip() function
 func TestFanoutQueueSkip(t *testing.T) {
 	path := Tempfile()
-	defer clearFiles(path, "fanoutqueue")
+	clearFiles(path, "fanoutqueue")
 	fanoutID := int64(100)
 	fanoutID1 := int64(101)
 
@@ -217,6 +222,7 @@ func TestFanoutQueueSkip(t *testing.T) {
 		t.Error("open fanout queue failed", err)
 	}
 	defer fq.Close()
+	defer clearFiles(path, "fanoutqueue")
 
 	for i := 0; i < 10; i++ {
 		_, err = fq.Enqueue([]byte("hello world" + strconv.Itoa(i)))
@@ -243,7 +249,7 @@ func TestFanoutQueueSkip(t *testing.T) {
 func TestFanoutQueueSubscribe(t *testing.T) {
 
 	path := Tempfile()
-	defer clearFiles(path, "fanoutqueue")
+	clearFiles(path, "fanoutqueue")
 	fanoutID := int64(100)
 	fanoutID1 := int64(101)
 
@@ -257,6 +263,7 @@ func TestFanoutQueueSubscribe(t *testing.T) {
 		t.Error("open fanout queue failed", err)
 	}
 	defer fq.Close()
+	defer clearFiles(path, "fanoutqueue")
 
 	fanoutIDCount1, fanoutIDCount2 := 0, 0
 	count := 10
@@ -293,7 +300,7 @@ func TestFanoutQueueSubscribe(t *testing.T) {
 func TestFanoutQueue_Status(t *testing.T) {
 	Convey("Test empty queue status result", t, func() {
 		path := Tempfile()
-		defer clearFiles(path, "fanoutqueue")
+		clearFiles(path, "fanoutqueue")
 		fanoutID := int64(100)
 
 		defer clearFrontIndexFiles(path, "fanoutqueue", fanoutID)
@@ -305,6 +312,7 @@ func TestFanoutQueue_Status(t *testing.T) {
 			t.Error("open fanout queue failed", err)
 		}
 		defer queue.Close()
+		defer clearFiles(path, "fanoutqueue")
 
 		qFileStatus := queue.Status(fanoutID)
 
@@ -315,8 +323,8 @@ func TestFanoutQueue_Status(t *testing.T) {
 		So(qFileStatus.HeadDataPageIndex, ShouldEqual, 0)
 		So(qFileStatus.HeadDataItemOffset, ShouldEqual, 0)
 
-		So(len(qFileStatus.IndexFileList), ShouldEqual, 1)
-		So(len(qFileStatus.DataFileList), ShouldEqual, 1)
+		So(len(qFileStatus.IndexFileList), ShouldEqual, 0)
+		So(len(qFileStatus.DataFileList), ShouldEqual, 0)
 		So(qFileStatus.MetaFileInfo, ShouldNotBeNil)
 		So(qFileStatus.FrontFileInfo, ShouldNotBeNil)
 
@@ -324,7 +332,7 @@ func TestFanoutQueue_Status(t *testing.T) {
 
 	Convey("Test non-empty queue status result", t, func() {
 		path := Tempfile()
-		defer clearFiles(path, "fanoutqueue")
+
 		fanoutID := int64(100)
 
 		defer clearFrontIndexFiles(path, "fanoutqueue", fanoutID)
@@ -336,6 +344,7 @@ func TestFanoutQueue_Status(t *testing.T) {
 			t.Error("open fanout queue failed", err)
 		}
 		defer queue.Close()
+		defer clearFiles(path, "fanoutqueue")
 
 		data := []byte("hello xmatthew")
 		dataLen := len(data)
@@ -372,7 +381,7 @@ func TestFanoutQueue_Status(t *testing.T) {
 func TestFanoutQueue_PeekPagination(t *testing.T) {
 	Convey("Test PeekPagination", t, func() {
 		path := Tempfile()
-		defer clearFiles(path, "fanoutqueue")
+		clearFiles(path, "fanoutqueue")
 		fanoutID := int64(100)
 
 		defer clearFrontIndexFiles(path, "fanoutqueue", fanoutID)
@@ -383,6 +392,7 @@ func TestFanoutQueue_PeekPagination(t *testing.T) {
 			t.Error(err)
 		}
 		defer queue.Close()
+		defer clearFiles(path, "fanoutqueue")
 
 		Convey("test PeekPagination on empty queue", func() {
 			data, indexs, err := queue.PeekPagination(fanoutID, 0, 0)
