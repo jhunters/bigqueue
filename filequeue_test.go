@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -323,6 +324,42 @@ func TestFileQueue_FreeSubscribe(t *testing.T) {
 
 	if i != 0 {
 		t.Error("subscribe count should be 0,  but actually is ", i)
+	}
+}
+
+// TestFileQueue_FreeSubscribe_MidCycle to test free subscribe function in the middle of cycle
+func TestFileQueue_FreeSubscribe_MidCycle(t *testing.T) {
+	path := Tempfile()
+	clearFiles(path, "testqueue")
+	i := 0
+	var queue = new(FileQueue)
+
+	err := queue.Open(path, "testqueue", nil)
+
+	var wg sync.WaitGroup
+	wg.Add(5)
+
+	queue.Subscribe(func(index int64, bb []byte, err error) {
+		defer wg.Done()
+		i++
+		if i == 5 {
+			queue.FreeSubscribe()
+		}
+	})
+
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer queue.Close()
+	defer clearFiles(path, "testqueue")
+
+	sz := 10
+	doEnqueue(queue, []byte("hello xiemalin中文"), sz, t)
+
+	wg.Wait()
+
+	if queue.Size() != 5 {
+		t.Error("remaining queue size should be 5,  but actually is ", i)
 	}
 }
 
