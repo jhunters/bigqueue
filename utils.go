@@ -19,15 +19,18 @@ func Assert(condition bool, message string, v ...interface{}) {
 	}
 }
 
-func warn(v ...interface{}) {
+// Warn print log to  os.Stderr
+func Warn(v ...interface{}) {
 	fmt.Fprintln(os.Stderr, v...)
 }
 
-func warnf(msg string, v ...interface{}) {
+// Warnf print log to  os.Stderr
+func Warnf(msg string, v ...interface{}) {
 	fmt.Fprintf(os.Stderr, msg+"\n", v...)
 }
 
-func printstack() {
+// Printstack print call stack trace info
+func Printstack() {
 	stack := strings.Join(strings.Split(string(debug.Stack()), "\n")[2:], "\n")
 	fmt.Fprintln(os.Stderr, stack)
 }
