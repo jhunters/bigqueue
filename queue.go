@@ -1,9 +1,12 @@
+/*
+ * @Author: Malin Xie
+ * @Description:
+ * @Date: 2020-08-28 20:06:46
+ */
 package bigqueue
 
 // Queue inteface to define the all necessary functions
 type Queue interface {
-	Open(dir string, queueName string, options *Options) error
-
 	// Determines whether a queue is empty
 	// return ture if empty, false otherwise
 	IsEmpty() bool
@@ -34,4 +37,12 @@ type Queue interface {
 
 	// to free asynchous subscribe
 	FreeSubscribe()
+}
+
+// I/O Queue inteface to define the all necessary functions
+type IOQueue interface {
+	Queue
+
+	// Open queue from file io info
+	Open(dir string, queueName string, options *Options) error
 }
