@@ -78,6 +78,7 @@ func (f *DBFactory) Close() error {
 		}
 	}
 
+	// set emtpy map
 	f.dbMap = make(map[int64]*DB)
 	f.lockMap = make(map[int64]*sync.Mutex)
 
