@@ -78,8 +78,8 @@ func (f *DBFactory) Close() error {
 		}
 	}
 
-	f.dbMap = nil
-	f.lockMap = nil
+	f.dbMap = make(map[int64]*DB)
+	f.lockMap = make(map[int64]*sync.Mutex)
 
 	return nil
 
