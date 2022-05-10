@@ -1,5 +1,3 @@
-// +build !windows,!plan9,!solaris,!darwin
-
 package bigqueue
 
 import (

@@ -1,3 +1,8 @@
+/*
+ * @Author: Malin Xie
+ * @Description:
+ * @Date: 2020-08-28 20:06:46
+ */
 package bigqueue
 
 import (
@@ -50,7 +55,7 @@ func mmap(db *DB, sz int) error {
 	}
 
 	// Convert to a byte array.
-	db.data = ((*[maxMapSize]byte)(unsafe.Pointer(addr)))
+	db.data = (*[maxMapSize]byte)(unsafe.Pointer(addr))
 	return nil
 }
 

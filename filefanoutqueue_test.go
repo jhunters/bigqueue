@@ -1,8 +1,8 @@
 package bigqueue
 
 import (
+	"fmt"
 	"strconv"
-	"strings"
 	"testing"
 	"time"
 
@@ -13,74 +13,76 @@ import (
 func TestFanoutQueueOpen(t *testing.T) {
 	path := Tempfile()
 	defer clearFiles(path, "fanoutqueue")
-	fq := FileFanoutQueue{}
-	err := fq.Open(path, "fanoutqueue", nil)
-	if err != nil {
-		t.Error("open fanout queue failed", err)
-	}
-	fq.Close()
+
+	Convey("TestFanoutQueueOpen", t, func() {
+
+		fq := FileFanoutQueue{}
+		err := fq.Open(path, "fanoutqueue", nil)
+		So(err, ShouldBeNil)
+		fq.Close()
+	})
+
 }
 
 // TestFanoutQueueOpen to test Open() function
 func TestFanoutQueueOpenTwice(t *testing.T) {
 	path := Tempfile()
 	defer clearFiles(path, "fanoutqueue")
-	fq := FileFanoutQueue{}
-	err := fq.Open(path, "fanoutqueue", nil)
-	if err != nil {
-		t.Error("open fanout queue failed", err)
-	}
 
-	err = fq.Open(path, "fanoutqueue", nil)
-	if err == nil {
-		t.Error("open fanout queue twice should return error but actually return nil")
-	}
-	fq.Close()
+	Convey("TestFanoutQueueOpen", t, func() {
+
+		fq := FileFanoutQueue{}
+		err := fq.Open(path, "fanoutqueue", nil)
+		So(err, ShouldBeNil)
+
+		err = fq.Open(path, "fanoutqueue", nil)
+		So(err, ShouldNotBeNil)
+		fq.Close()
+	})
+
 }
 
 // TestFanoutQueueIsEmpty to test open a empty directory should return empty queue
 func TestFanoutQueueIsEmpty(t *testing.T) {
 	path := Tempfile()
 	clearFiles(path, "fanoutqueue")
-	fanoutID := int64(100)
-	defer clearFrontIndexFiles(path, "fanoutqueue", fanoutID)
-
-	fq := FileFanoutQueue{}
-	err := fq.Open(path, "fanoutqueue", nil)
-
-	if err != nil {
-		t.Error("open fanout queue failed", err)
-	}
-	defer fq.Close()
 	defer clearFiles(path, "fanoutqueue")
 
-	bool := fq.IsEmpty(fanoutID)
-	if !bool {
-		t.Error("New created queue must be empty")
-	}
+	Convey("TestFanoutQueueOpen", t, func() {
+
+		fanoutID := int64(100)
+		defer clearFrontIndexFiles(path, "fanoutqueue", fanoutID)
+
+		fq := FileFanoutQueue{}
+		err := fq.Open(path, "fanoutqueue", nil)
+		So(err, ShouldBeNil)
+		defer fq.Close()
+
+		bool := fq.IsEmpty(fanoutID)
+		SoMsg("New created queue must be empty", bool, ShouldBeTrue)
+	})
+
 }
 
 // TestFanoutQueueSize to test queue Size() function
 func TestFanoutQueueSize(t *testing.T) {
 	path := Tempfile()
 	clearFiles(path, "fanoutqueue")
-	fanoutID := int64(100)
-	defer clearFrontIndexFiles(path, "fanoutqueue", fanoutID)
-
-	fq := FileFanoutQueue{}
-	err := fq.Open(path, "fanoutqueue", nil)
-
-	if err != nil {
-		t.Error("open fanout queue failed", err)
-	}
-
-	defer fq.Close()
 	defer clearFiles(path, "fanoutqueue")
 
-	sz := fq.Size(fanoutID)
-	if sz != 0 {
-		t.Error("New created queue size must be zero")
-	}
+	Convey("TestFanoutQueueOpen", t, func() {
+		fanoutID := int64(100)
+		defer clearFrontIndexFiles(path, "fanoutqueue", fanoutID)
+
+		fq := FileFanoutQueue{}
+		err := fq.Open(path, "fanoutqueue", nil)
+		So(err, ShouldBeNil)
+		defer fq.Close()
+
+		sz := fq.Size(fanoutID)
+		SoMsg("New created queue size must be zero", sz, ShouldEqual, 0)
+	})
+
 }
 
 // TestFanoutQueueEnqueue to test enqueue only function
@@ -89,35 +91,28 @@ func TestFanoutQueueEnqueue(t *testing.T) {
 	clearFiles(path, "fanoutqueue")
 	fanoutID := int64(100)
 	defer clearFrontIndexFiles(path, "fanoutqueue", fanoutID)
-
-	fq := FileFanoutQueue{}
-	err := fq.Open(path, "fanoutqueue", nil)
-
-	if err != nil {
-		t.Error("open fanout queue failed", err)
-	}
-	defer fq.Close()
 	defer clearFiles(path, "fanoutqueue")
-	sz := fq.Size(fanoutID)
-	if sz != 0 {
-		t.Error("New created queue size must be zero")
-	}
 
-	_, err = fq.Enqueue([]byte("hello world"))
+	Convey("TestFanoutQueueOpen", t, func() {
+		fq := FileFanoutQueue{}
+		err := fq.Open(path, "fanoutqueue", nil)
 
-	if err != nil {
-		t.Error("enqueue action failed", err)
-	}
+		So(err, ShouldBeNil)
+		defer fq.Close()
+		sz := fq.Size(fanoutID)
+		SoMsg("New created queue size must be zero", sz, ShouldEqual, 0)
 
-	sz = fq.Size(fanoutID)
-	if sz != 1 {
-		t.Error("New created queue size must be 1", sz)
-	}
+		_, err = fq.Enqueue([]byte("hello world"))
 
-	bool := fq.IsEmpty(fanoutID)
-	if bool {
-		t.Error("New created queue must be empty", bool)
-	}
+		So(err, ShouldBeNil)
+
+		sz = fq.Size(fanoutID)
+		So(sz, ShouldEqual, 1)
+
+		bool := fq.IsEmpty(fanoutID)
+		So(bool, ShouldBeFalse)
+	})
+
 }
 
 func clearFrontIndexFiles(path, queueName string, fanoutID int64) {
@@ -132,31 +127,25 @@ func TestFanoutQueueEnqueueDequeue(t *testing.T) {
 	fanoutID1 := int64(101)
 	defer clearFrontIndexFiles(path, "fanoutqueue", fanoutID)
 	defer clearFrontIndexFiles(path, "fanoutqueue", fanoutID1)
-
-	fq := FileFanoutQueue{}
-	err := fq.Open(path, "fanoutqueue", nil)
-
-	if err != nil {
-		t.Error("open fanout queue failed", err)
-	}
-	defer fq.Close()
 	defer clearFiles(path, "fanoutqueue")
 
-	_, err = fq.Enqueue([]byte("hello world"))
+	Convey("TestFanoutQueueOpen", t, func() {
+		fq := FileFanoutQueue{}
+		err := fq.Open(path, "fanoutqueue", nil)
 
-	if err != nil {
-		t.Error("enqueue action failed", err)
-	}
+		So(err, ShouldBeNil)
+		defer fq.Close()
 
-	index, data, _ := fq.Dequeue(fanoutID)
-	index1, data1, _ := fq.Dequeue(fanoutID1)
-	if index != index1 {
-		t.Error("index should same", index, index1)
-	}
+		_, err = fq.Enqueue([]byte("hello world"))
 
-	if strings.Compare(string(data), string(data1)) != 0 {
-		t.Error("data should same")
-	}
+		So(err, ShouldBeNil)
+
+		index, data, _ := fq.Dequeue(fanoutID)
+		index1, data1, _ := fq.Dequeue(fanoutID1)
+		So(index, ShouldEqual, index1)
+		So(data, ShouldResemble, data1)
+	})
+
 }
 
 // TestFanoutQueueEnqueuePeek to test Peek() function
@@ -167,42 +156,34 @@ func TestFanoutQueueEnqueuePeek(t *testing.T) {
 	fanoutID1 := int64(101)
 	defer clearFrontIndexFiles(path, "fanoutqueue", fanoutID)
 	defer clearFrontIndexFiles(path, "fanoutqueue", fanoutID1)
-
-	fq := FileFanoutQueue{}
-	err := fq.Open(path, "fanoutqueue", nil)
-
-	if err != nil {
-		t.Error("open fanout queue failed", err)
-	}
-	defer fq.Close()
 	defer clearFiles(path, "fanoutqueue")
 
-	_, err = fq.Enqueue([]byte("hello world"))
+	Convey("TestFanoutQueueOpen", t, func() {
 
-	if err != nil {
-		t.Error("enqueue action failed", err)
-	}
+		fq := FileFanoutQueue{}
+		err := fq.Open(path, "fanoutqueue", nil)
 
-	index, data, _ := fq.Peek(fanoutID)
-	index1, data1, _ := fq.Peek(fanoutID1)
+		So(err, ShouldBeNil)
+		defer fq.Close()
 
-	if index != index1 {
-		t.Error("index should same", index, index1)
-	}
+		_, err = fq.Enqueue([]byte("hello world"))
 
-	if strings.Compare(string(data), string(data1)) != 0 {
-		t.Error("data should same")
-	}
+		So(err, ShouldBeNil)
 
-	// test peek all
-	dataAll, indexAll, err := fq.PeekAll(fanoutID)
-	if err != nil {
-		t.Error(err)
-	}
+		index, data, _ := fq.Peek(fanoutID)
+		index1, data1, _ := fq.Peek(fanoutID1)
 
-	if len(dataAll) != 1 || len(indexAll) != 1 {
-		t.Error("peek All size error should be", 1, "but actual is ", len(dataAll))
-	}
+		So(index, ShouldEqual, index1)
+		So(data, ShouldResemble, data1)
+
+		// test peek all
+		dataAll, indexAll, err := fq.PeekAll(fanoutID)
+		So(err, ShouldBeNil)
+
+		So(len(dataAll), ShouldEqual, 1)
+		So(len(indexAll), ShouldEqual, 1)
+	})
+
 }
 
 // TestFanoutQueueSkip to test Skip() function
@@ -214,35 +195,31 @@ func TestFanoutQueueSkip(t *testing.T) {
 
 	defer clearFrontIndexFiles(path, "fanoutqueue", fanoutID)
 	defer clearFrontIndexFiles(path, "fanoutqueue", fanoutID1)
-
-	fq := FileFanoutQueue{}
-	err := fq.Open(path, "fanoutqueue", nil)
-
-	if err != nil {
-		t.Error("open fanout queue failed", err)
-	}
-	defer fq.Close()
 	defer clearFiles(path, "fanoutqueue")
 
-	for i := 0; i < 10; i++ {
-		_, err = fq.Enqueue([]byte("hello world" + strconv.Itoa(i)))
+	Convey("TestFanoutQueueOpen", t, func() {
+		fq := FileFanoutQueue{}
+		err := fq.Open(path, "fanoutqueue", nil)
 
-		if err != nil {
-			t.Error("enqueue action failed", err)
+		So(err, ShouldBeNil)
+		defer fq.Close()
+
+		for i := 0; i < 10; i++ {
+			_, err = fq.Enqueue([]byte("hello world" + strconv.Itoa(i)))
+			So(err, ShouldBeNil)
 		}
-	}
 
-	fq.Skip(fanoutID, int64(5))
-	index, data, _ := fq.Peek(fanoutID)
-	if index != 5 {
-		t.Error("index should be 5 but actually", index, data)
-	}
+		fq.Skip(fanoutID, int64(5))
+		index, data, _ := fq.Peek(fanoutID)
+		SoMsg(fmt.Sprintf("index should be 5 but actually %d", index), index, ShouldEqual, 5)
+		So(data, ShouldNotBeNil)
 
-	fq.Skip(fanoutID1, int64(1))
-	index1, data1, _ := fq.Peek(fanoutID1)
-	if index1 != 1 {
-		t.Error("index should be 1 but actually", index1, data1)
-	}
+		fq.Skip(fanoutID1, int64(1))
+		index1, data1, _ := fq.Peek(fanoutID1)
+		So(index1, ShouldEqual, 1)
+		So(data1, ShouldNotBeNil)
+	})
+
 }
 
 // TestFanoutQueueSubscribe to test Subscribe() function with multiple subscriber ids
@@ -255,44 +232,37 @@ func TestFanoutQueueSubscribe(t *testing.T) {
 
 	defer clearFrontIndexFiles(path, "fanoutqueue", fanoutID)
 	defer clearFrontIndexFiles(path, "fanoutqueue", fanoutID1)
-
-	fq := FileFanoutQueue{}
-	err := fq.Open(path, "fanoutqueue", nil)
-
-	if err != nil {
-		t.Error("open fanout queue failed", err)
-	}
-	defer fq.Close()
 	defer clearFiles(path, "fanoutqueue")
 
-	fanoutIDCount1, fanoutIDCount2 := 0, 0
-	count := 10
+	Convey("TestFanoutQueueOpen", t, func() {
 
-	fq.Subscribe(fanoutID, func(index int64, data []byte, err error) {
-		fanoutIDCount1++
-	})
+		fq := FileFanoutQueue{}
+		err := fq.Open(path, "fanoutqueue", nil)
 
-	for i := 0; i < count; i++ {
-		_, err = fq.Enqueue([]byte("hello world" + strconv.Itoa(i)))
+		So(err, ShouldBeNil)
+		defer fq.Close()
 
-		if err != nil {
-			t.Error("enqueue action failed", err)
+		fanoutIDCount1, fanoutIDCount2 := 0, 0
+		count := 10
+
+		fq.Subscribe(fanoutID, func(index int64, data []byte, err error) {
+			fanoutIDCount1++
+		})
+
+		for i := 0; i < count; i++ {
+			_, err = fq.Enqueue([]byte("hello world" + strconv.Itoa(i)))
+			So(err, ShouldBeNil)
 		}
-	}
 
-	fq.Subscribe(fanoutID1, func(index int64, data []byte, err error) {
-		fanoutIDCount2++
+		fq.Subscribe(fanoutID1, func(index int64, data []byte, err error) {
+			fanoutIDCount2++
+		})
+
+		time.Sleep(time.Duration(3) * time.Second)
+
+		So(fanoutIDCount1, ShouldEqual, count)
+		So(fanoutIDCount2, ShouldEqual, count)
 	})
-
-	time.Sleep(time.Duration(3) * time.Second)
-
-	if fanoutIDCount1 != count {
-		t.Error("subscribe id=", fanoutID, " count should be ", count, " but actually is ", fanoutIDCount1)
-	}
-
-	if fanoutIDCount2 != count {
-		t.Error("subscribe id=", fanoutID1, " count should be ", count, " but actually is ", fanoutIDCount2)
-	}
 
 }
 
@@ -304,6 +274,7 @@ func TestFanoutQueue_Status(t *testing.T) {
 		fanoutID := int64(100)
 
 		defer clearFrontIndexFiles(path, "fanoutqueue", fanoutID)
+		defer clearFiles(path, "fanoutqueue")
 
 		queue := FileFanoutQueue{}
 		err := queue.Open(path, "fanoutqueue", nil)
@@ -312,7 +283,6 @@ func TestFanoutQueue_Status(t *testing.T) {
 			t.Error("open fanout queue failed", err)
 		}
 		defer queue.Close()
-		defer clearFiles(path, "fanoutqueue")
 
 		qFileStatus := queue.Status(fanoutID)
 

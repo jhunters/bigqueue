@@ -39,10 +39,18 @@ type Queue interface {
 	FreeSubscribe()
 }
 
-// I/O Queue inteface to define the all necessary functions
+// I/O queue inteface to define the all necessary functions
 type IOQueue interface {
 	Queue
 
 	// Open queue from file io info
 	Open(dir string, queueName string, options *Options) error
+}
+
+// RemoteQueue remote server queue inteface to define  the all necessary functions
+type RemoteQueue interface {
+	Queue
+
+	// Open queue from remote server
+	Open(serverUrl string, queueName string)
 }
