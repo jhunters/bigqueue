@@ -2,74 +2,72 @@ package bigqueue
 
 import (
 	"os"
-	"strings"
 	"testing"
+
+	. "github.com/smartystreets/goconvey/convey"
 )
 
 func Test_MmapWriteAt(t *testing.T) {
 	path := Tempfile() + "/test.dat"
 	defer os.Remove(path)
 
-	db := &DB{
-		path:            path,
-		InitialMmapSize: 128 * 1024,
-		opened:          true,
-	}
+	Convey("Test_MmapWriteAt", t, func() {
+		db := &DB{
+			path:            path,
+			InitialMmapSize: 128 * 1024,
+			opened:          true,
+		}
 
-	err := db.Open(0666)
-	if err != nil {
-		t.Error(err)
-	}
+		err := db.Open(0666)
+		So(err, ShouldBeNil)
 
-	defer db.Close()
+		defer db.Close()
 
-	s := "hello xiemalin"
-	db.file.Write([]byte(s))
+		s := "hello xiemalin"
+		db.file.Write([]byte(s))
 
-	v := db.data[:len(s)]
-	if strings.Compare(s, string(v)) != 0 {
-		t.Error("except string is ", s, " but actually is", string(v))
-	}
+		v := db.data[:len(s)]
+		So(s, ShouldEqual, string(v))
+	})
 
 }
 
 func Test_MmapWriteAt1(t *testing.T) {
 	path := Tempfile() + "/test.dat"
 	defer os.Remove(path)
-	db := &DB{
-		path:            path,
-		InitialMmapSize: 128 * 1024,
-		opened:          true,
-	}
 
-	err := db.Open(0666)
-	if err != nil {
-		t.Error(err)
-	}
+	Convey("Test_MmapWriteAt1", t, func() {
+		db := &DB{
+			path:            path,
+			InitialMmapSize: 128 * 1024,
+			opened:          true,
+		}
 
-	s := "hello xiemalin"
-	bb := []byte(s)
-	for i := 0; i < len(bb); i++ {
-		db.data[i] = bb[i]
-	}
+		err := db.Open(0666)
+		So(err, ShouldBeNil)
 
-	db.Close()
+		s := "hello xiemalin"
+		bb := []byte(s)
+		// for i := 0; i < len(bb); i++ {
+		// 	db.data[i] = bb[i]
+		// }
+		copy(db.data[:len(bb)], bb)
 
-	db = &DB{
-		path:            path,
-		InitialMmapSize: 128 * 1024,
-		opened:          true,
-	}
-	//re-open
-	err = db.Open(0666)
-	if err != nil {
-		t.Error(err)
-	}
-	defer db.Close()
+		db.Close()
 
-	s = "hello xiemalin"
-	v := db.data[:len(s)]
-	if strings.Compare(s, string(v)) != 0 {
-		t.Error("except string is ", s, " but actually is", string(v))
-	}
+		db = &DB{
+			path:            path,
+			InitialMmapSize: 128 * 1024,
+			opened:          true,
+		}
+		//re-open
+		err = db.Open(0666)
+		So(err, ShouldBeNil)
+		defer db.Close()
+
+		s = "hello xiemalin"
+		v := db.data[:len(s)]
+		So(s, ShouldEqual, string(v))
+	})
+
 }
