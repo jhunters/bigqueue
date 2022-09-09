@@ -15,3 +15,23 @@
 # vendor/
 /.settings/
 /.project
+bin/temp/fanoutqueue/data/blank.txt
+bin/temp/fanoutqueue/data/page-0.dat
+bin/temp/fanoutqueue/front_index/blank.txt
+bin/temp/fanoutqueue/front_index/page-0.dat
+bin/temp/fanoutqueue/front_index_100/blank.txt
+bin/temp/fanoutqueue/front_index_101/blank.txt
+bin/temp/fanoutqueue/index/blank.txt
+bin/temp/fanoutqueue/index/page-0.dat
+bin/temp/fanoutqueue/meta_data/blank.txt
+bin/temp/fanoutqueue/meta_data/page-0.dat
+bin/temp/testqueue/data/page-0.dat
+bin/temp/testqueue/data/page-164.dat
+bin/temp/testqueue/data/page-165.dat
+bin/temp/testqueue/data/page-166.dat
+bin/temp/testqueue/data/page-167.dat
+bin/temp/testqueue/data/test.dir
+bin/temp/testqueue/front_index/test.dir
+bin/temp/testqueue/index/page-0.dat
+bin/temp/testqueue/index/test.dir
+bin/temp/testqueue/meta_data/test.dir

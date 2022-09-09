@@ -32,8 +32,6 @@ type DB struct {
 
 	opened bool
 
-	dataref []byte // mmap'ed readonly, write throws SEGV
-
 	ops struct {
 		writeAt func(b []byte, off int64) (n int, err error)
 	}

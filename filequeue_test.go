@@ -13,112 +13,122 @@ import (
 
 // TestFileQueue_OpenError to test Open function which without required parameters.
 func TestFileQueue_OpenError(t *testing.T) {
-	path := Tempfile()
-	clearFiles(path, "testqueue")
-	var queue = &FileQueue{}
-	//var queue = new(FileQueue)
 
-	err := queue.Open("", "", nil)
-	if err == nil {
-		t.Error("Error parameter 'path' should return non-nil err")
-	}
-	defer queue.Close()
-	defer clearFiles(path, "testqueue")
+	Convey("TestFileQueue_OpenError", t, func() {
+		path := Tempfile()
+		clearFiles(path, "testqueue")
+		defer clearFiles(path, "testqueue")
+		Convey("Open with empty path and name", func() {
+			var queue = &FileQueue{}
+			//var queue = new(FileQueue)
+			err := queue.Open("", "", nil)
+			So(err, ShouldNotBeNil)
+			So(err, ShouldBeError, "parameter 'dir' can not be blank")
+			defer queue.Close()
+			defer clearFiles(path, "testqueue")
+		})
 
-	err = queue.Open(path, "", nil)
-	if err == nil {
-		t.Error("Error parameter 'queueName' should return non-nil err")
-	}
-	defer queue.Close()
+		Convey("Open with empty name", func() {
+			var queue = &FileQueue{}
+			err := queue.Open(path, "", nil)
+			So(err, ShouldNotBeNil)
+			So(err, ShouldBeError, "parameter 'queueName' can not be blank")
+			defer queue.Close()
+		})
+
+	})
+
 }
 
 // TestFileQueue_Open to test open file without any error and check the initial size
 func TestFileQueue_Open(t *testing.T) {
 	path := Tempfile()
 	clearFiles(path, "testqueue")
-	var queue = new(FileQueue)
-
-	err := queue.Open(path, "testqueue", nil)
-
-	if err != nil {
-		t.Error(err)
-	}
-	defer queue.Close()
 	defer clearFiles(path, "testqueue")
 
-	sz := queue.Size()
-	if sz != 0 {
-		t.Error("Init queue size must be zero, but now is", sz)
-	}
+	Convey("TestFileQueue_Open", t, func() {
+		var queue = new(FileQueue)
 
-	empty := queue.IsEmpty()
-	if !empty {
-		t.Error("Init queue must be empty, but now is not empty")
-	}
+		err := queue.Open(path, "testqueue", nil)
+
+		if err != nil {
+			t.Error(err)
+		}
+		defer queue.Close()
+		defer clearFiles(path, "testqueue")
+
+		sz := queue.Size()
+		SoMsg(fmt.Sprintf("Init queue size must be zero, but now is %d", sz), sz, ShouldEqual, 0)
+
+		empty := queue.IsEmpty()
+		SoMsg("Init queue must be empty, but now is not empty", empty, ShouldBeTrue)
+	})
+
 }
 
 // TestFileQueue_Open to test open file without any error and check the initial size
 func TestFileQueue_OpenTwice(t *testing.T) {
 	path := Tempfile()
 	clearFiles(path, "testqueue")
-	var queue = new(FileQueue)
-
-	err := queue.Open(path, "testqueue", nil)
-
-	if err != nil {
-		t.Error(err)
-	}
-	defer queue.Close()
 	defer clearFiles(path, "testqueue")
 
-	// open again will return error
-	err = queue.Open(path, "testqueue", nil)
-	if err == nil {
-		t.Error("open twice should return error, but actually return nil")
-	}
+	Convey("TestFileQueue_OpenTwice", t, func() {
+		var queue = new(FileQueue)
 
-	sz := queue.Size()
-	if sz != 0 {
-		t.Error("Init queue size must be zero, but now is", sz)
-	}
+		err := queue.Open(path, "testqueue", nil)
+		So(err, ShouldBeNil)
 
-	empty := queue.IsEmpty()
-	if !empty {
-		t.Error("Init queue must be empty, but now is not empty")
-	}
+		defer queue.Close()
+		defer clearFiles(path, "testqueue")
+
+		// open again will return error
+		Convey("Already open", func() {
+			err = queue.Open(path, "testqueue", nil)
+			So(err, ShouldNotBeNil)
+			So(err, ShouldBeError, "FileQueue already opened")
+		})
+
+		sz := queue.Size()
+		SoMsg(fmt.Sprintf("Init queue size must be zero, but now is %d", sz), sz, ShouldEqual, 0)
+
+		empty := queue.IsEmpty()
+		SoMsg("Init queue must be empty, but now is not empty", empty, ShouldBeTrue)
+	})
+
 }
 
 // TestFileQueue_Enqueue to test enqueue function
 func TestFileQueue_Enqueue(t *testing.T) {
 	path := Tempfile()
 	clearFiles(path, "testqueue")
-	var queue = new(FileQueue)
-	err := queue.Open(path, "testqueue", nil)
 
-	if err != nil {
-		fmt.Println(err)
-	}
+	var queue = new(FileQueue)
+	Convey("TestFileQueue_Enqueue", t, func() {
+		err := queue.Open(path, "testqueue", nil)
+		So(err, ShouldBeNil)
+		enqueue(queue, []byte("hello xiemalin中文"), 10, t)
+	})
 	defer queue.Close()
 	defer clearFiles(path, "testqueue")
 
-	enqueue(queue, []byte("hello xiemalin中文"), 10, t)
 }
 
 // TestFileQueue_DequeueEmpty to test dequeue item from an empty queue
 func TestFileQueue_DequeueEmpty(t *testing.T) {
 	path := Tempfile()
 	clearFiles(path, "testqueue")
-	var queue = new(FileQueue)
-
-	err := queue.Open(path, "testqueue", nil)
-
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer queue.Close()
 	defer clearFiles(path, "testqueue")
 
-	dequeueEmpty(queue, t)
+	Convey("TestFileQueue_DequeueEmpty", t, func() {
+
+		var queue = new(FileQueue)
+
+		err := queue.Open(path, "testqueue", nil)
+
+		So(err, ShouldBeNil)
+		dequeueEmpty(queue, t)
+		defer queue.Close()
+	})
 
 }
 
@@ -126,21 +136,19 @@ func TestFileQueue_DequeueEmpty(t *testing.T) {
 func TestFileQueue_EnqueueDequeue(t *testing.T) {
 	path := Tempfile()
 	clearFiles(path, "testqueue")
-	var queue = new(FileQueue)
-
-	err := queue.Open(path, "testqueue", nil)
-
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer queue.Close()
 	defer clearFiles(path, "testqueue")
 
-	enqueue(queue, []byte("hello xiemalin中文"), 10, t)
+	Convey("TestFileQueue_EnqueueDequeue", t, func() {
 
-	dequeue(queue, []byte("hello xiemalin中文"), 10, t)
-	// to check there are no message avaiable
-	dequeueEmpty(queue, t)
+		var queue = new(FileQueue)
+		err := queue.Open(path, "testqueue", nil)
+		So(err, ShouldBeNil)
+		defer queue.Close()
+		enqueue(queue, []byte("hello xiemalin中文"), 10, t)
+		dequeue(queue, []byte("hello xiemalin中文"), 10, t)
+		// to check there are no message avaiable
+		dequeueEmpty(queue, t)
+	})
 
 }
 
@@ -148,23 +156,24 @@ func TestFileQueue_EnqueueDequeue(t *testing.T) {
 func TestFileQueue_Skip(t *testing.T) {
 	path := Tempfile()
 	clearFiles(path, "testqueue")
-	var queue = new(FileQueue)
-
-	err := queue.Open(path, "testqueue", nil)
-
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer queue.Close()
 	defer clearFiles(path, "testqueue")
 
-	enqueue(queue, []byte("hello xiemalin中文"), 10, t)
+	Convey("TestFileQueue_EnqueueDequeue", t, func() {
+		var queue = new(FileQueue)
 
-	queue.Skip(5)
+		err := queue.Open(path, "testqueue", nil)
 
-	dequeue(queue, []byte("hello xiemalin中文"), 5, t)
-	// to check there are no message avaiable
-	dequeueEmpty(queue, t)
+		So(err, ShouldBeNil)
+		defer queue.Close()
+
+		enqueue(queue, []byte("hello xiemalin中文"), 10, t)
+
+		queue.Skip(5)
+
+		dequeue(queue, []byte("hello xiemalin中文"), 5, t)
+		// to check there are no message avaiable
+		dequeueEmpty(queue, t)
+	})
 
 }
 
@@ -172,37 +181,31 @@ func TestFileQueue_Skip(t *testing.T) {
 func TestFileQueue_Peek(t *testing.T) {
 	path := Tempfile()
 	clearFiles(path, "testqueue")
-	var queue = new(FileQueue)
-
-	err := queue.Open(path, "testqueue", nil)
-
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer queue.Close()
 	defer clearFiles(path, "testqueue")
 
-	// peek to an empty queue
-	index, bb, err := queue.Peek()
-	if err != nil {
-		t.Error("Error peek to an empty queue should return nil err, but actually is ", err)
-	}
+	Convey("TestFileQueue_EnqueueDequeue", t, func() {
+		var queue = new(FileQueue)
 
-	if index != -1 {
-		t.Error("Error peek to an empty queue should return index of '-1', but actually is ", index)
-	}
+		err := queue.Open(path, "testqueue", nil)
 
-	if bb != nil {
-		t.Error("Error peek to an empty queue should return nil, but actually is ", bb)
-	}
+		So(err, ShouldBeNil)
+		defer queue.Close()
 
-	enqueue(queue, []byte("hello xiemalin中文"), 10, t)
+		// peek to an empty queue
+		index, bb, err := queue.Peek()
+		So(err, ShouldBeNil)
+		SoMsg(fmt.Sprintf("Error peek to an empty queue should return index of '-1', but actually is %d", index), index, ShouldEqual, -1)
+		So(bb, ShouldBeNil)
 
-	index, bb, err = queue.Peek()
-	index2, bb2, err2 := queue.Peek()
-	if index != index2 || strings.Compare(string(bb), string(bb2)) != 0 || err != err2 {
-		t.Error("Error peek twice but return different result ")
-	}
+		enqueue(queue, []byte("hello xiemalin中文"), 10, t)
+
+		index, bb, err = queue.Peek()
+		index2, bb2, err2 := queue.Peek()
+		So(index, ShouldEqual, index2)
+		So(bb, ShouldResemble, bb2)
+		So(err, ShouldResemble, err2)
+
+	})
 
 }
 
@@ -210,24 +213,25 @@ func TestFileQueue_Peek(t *testing.T) {
 func TestFileQueue_Gc(t *testing.T) {
 	path := Tempfile()
 	clearFiles(path, "testqueue")
-	var queue = new(FileQueue)
-	// use custom options
-	var options = &Options{
-		DataPageSize:      128,
-		IndexItemsPerPage: 17,
-	}
-
-	err := queue.Open(path, "testqueue", options)
-
-	if err != nil {
-		t.Error(err)
-	}
-	defer queue.Close()
 	defer clearFiles(path, "testqueue")
 
-	enqueue(queue, []byte("hello xiemalin中文"), 500, t)
-	dequeue(queue, []byte("hello xiemalin中文"), 500, t)
-	queue.Gc()
+	Convey("TestFileQueue_Gc", t, func() {
+		var queue = new(FileQueue)
+		// use custom options
+		var options = &Options{
+			DataPageSize:      128,
+			IndexItemsPerPage: 17,
+		}
+
+		err := queue.Open(path, "testqueue", options)
+
+		So(err, ShouldBeNil)
+		defer queue.Close()
+
+		enqueue(queue, []byte("hello xiemalin中文"), 500, t)
+		dequeue(queue, []byte("hello xiemalin中文"), 500, t)
+		queue.Gc()
+	})
 
 }
 
@@ -235,66 +239,64 @@ func TestFileQueue_Gc(t *testing.T) {
 func TestFileQueue_AutoGc(t *testing.T) {
 	path := Tempfile()
 	clearFiles(path, "testqueue")
-	var queue = new(FileQueue)
-	// use custom options
-	var options = &Options{
-		DataPageSize:      128,
-		IndexItemsPerPage: 17,
-		AutoGCBySeconds:   1,
-	}
-
-	err := queue.Open(path, "testqueue", options)
-
-	if err != nil {
-		t.Error(err)
-	}
-	defer queue.Close()
 	defer clearFiles(path, "testqueue")
 
-	doEnqueue(queue, []byte("hello xiemalin中文"), 500, t)
-	dequeue(queue, []byte("hello xiemalin中文"), 500, t)
+	Convey("TestFileQueue_Gc", t, func() {
+		var queue = new(FileQueue)
+		// use custom options
+		var options = &Options{
+			DataPageSize:      128,
+			IndexItemsPerPage: 17,
+			AutoGCBySeconds:   1,
+		}
 
-	time.Sleep(2 * time.Second)
+		err := queue.Open(path, "testqueue", options)
+
+		So(err, ShouldBeNil)
+		defer queue.Close()
+
+		doEnqueue(queue, []byte("hello xiemalin中文"), 500, t)
+		dequeue(queue, []byte("hello xiemalin中文"), 500, t)
+
+		time.Sleep(2 * time.Second)
+	})
 }
 
 // TestFileQueue_Subscribe to test subscribe function
 func TestFileQueue_Subscribe(t *testing.T) {
 	path := Tempfile()
 	clearFiles(path, "testqueue")
-	i := 0
-	var queue = new(FileQueue)
-
-	err := queue.Subscribe(func(index int64, bb []byte, err error) {
-		i++
-	})
-	// here should err
-	if err != ErrSubscribeFailedNoOpenErr {
-		t.Error("Subscribe shoule return err before queue opened")
-	}
-
-	err = queue.Open(path, "testqueue", nil)
-
-	queue.Subscribe(func(index int64, bb []byte, err error) {
-		i++
-	})
-
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer queue.Close()
 	defer clearFiles(path, "testqueue")
 
-	sz := 10
+	Convey("TestFileQueue_Subscribe", t, func() {
+		i := 0
+		var queue = new(FileQueue)
 
-	doEnqueue(queue, []byte("hello xiemalin中文"), sz, t)
+		err := queue.Subscribe(func(index int64, bb []byte, err error) {
+			i++
+		})
+		// here should err
+		So(err, ShouldBeError, ErrSubscribeFailedNoOpenErr)
 
-	time.Sleep(time.Duration(2) * time.Second)
+		err = queue.Open(path, "testqueue", nil)
 
-	if i != sz {
-		t.Error("subscribe count should be", sz, " but actually is ", i)
-	}
+		queue.Subscribe(func(index int64, bb []byte, err error) {
+			i++
+		})
 
-	queue.FreeSubscribe()
+		So(err, ShouldBeNil)
+		defer queue.Close()
+
+		sz := 10
+
+		doEnqueue(queue, []byte("hello xiemalin中文"), sz, t)
+
+		time.Sleep(time.Duration(2) * time.Second)
+
+		So(i, ShouldEqual, sz)
+
+		queue.FreeSubscribe()
+	})
 
 }
 
@@ -302,29 +304,31 @@ func TestFileQueue_Subscribe(t *testing.T) {
 func TestFileQueue_FreeSubscribe(t *testing.T) {
 	path := Tempfile()
 	clearFiles(path, "testqueue")
-	i := 0
-	var queue = new(FileQueue)
-
-	err := queue.Open(path, "testqueue", nil)
-
-	queue.Subscribe(func(index int64, bb []byte, err error) {
-		i++
-	})
-
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer queue.Close()
 	defer clearFiles(path, "testqueue")
 
-	queue.FreeSubscribe()
-	sz := 10
-	// no longer receive subscrbie callback
-	enqueue(queue, []byte("hello xiemalin中文"), sz, t)
+	Convey("TestFileQueue_Subscribe", t, func() {
 
-	if i != 0 {
-		t.Error("subscribe count should be 0,  but actually is ", i)
-	}
+		i := 0
+		var queue = new(FileQueue)
+
+		err := queue.Open(path, "testqueue", nil)
+
+		queue.Subscribe(func(index int64, bb []byte, err error) {
+			i++
+		})
+
+		So(err, ShouldBeNil)
+		defer queue.Close()
+
+		queue.FreeSubscribe()
+		sz := 10
+		// no longer receive subscrbie callback
+		enqueue(queue, []byte("hello xiemalin中文"), sz, t)
+
+		SoMsg(fmt.Sprintf("subscribe count should be 0,  but actually is %d", i), i, ShouldEqual, 0)
+
+	})
+
 }
 
 // TestFileQueue_FreeSubscribe_MidCycle to test free subscribe function in the middle of cycle
@@ -367,26 +371,27 @@ func TestFileQueue_FreeSubscribe_MidCycle(t *testing.T) {
 func TestFileQueue_PeekAll(t *testing.T) {
 	path := Tempfile()
 	clearFiles(path, "testqueue")
-	var queue = new(FileQueue)
-
-	err := queue.Open(path, "testqueue", nil)
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer queue.Close()
 	defer clearFiles(path, "testqueue")
 
-	sz := 10
-	// no longer receive subscrbie callback
-	enqueue(queue, []byte("hello xiemalin中文"), sz, t)
+	Convey("TestFileQueue_Subscribe", t, func() {
 
-	r, indexs, err := queue.PeekAll()
-	if err != nil {
-		t.Error(err)
-	}
-	if len(r) != 10 || len(indexs) != 10 {
-		t.Error("Peek all should return size ", sz)
-	}
+		var queue = new(FileQueue)
+
+		err := queue.Open(path, "testqueue", nil)
+		So(err, ShouldBeNil)
+		defer queue.Close()
+
+		sz := 10
+		// no longer receive subscrbie callback
+		enqueue(queue, []byte("hello xiemalin中文"), sz, t)
+
+		r, indexs, err := queue.PeekAll()
+		So(err, ShouldBeNil)
+		So(len(r), ShouldEqual, 10)
+		So(len(indexs), ShouldEqual, 10)
+
+	})
+
 }
 
 // TestFileQueue_Status
@@ -539,21 +544,15 @@ func enqueue(queue Queue, content []byte, size int, t *testing.T) {
 	doEnqueue(queue, content, size, t)
 
 	sz := queue.Size()
-	if sz != int64(size) {
-		t.Error("Error enqueue count expect size is ", size, ", but acutal is ", sz)
-	}
+	So(sz, ShouldEqual, size)
 }
 
 func doEnqueue(queue Queue, content []byte, size int, t *testing.T) {
 	for i := 0; i < size; i++ {
 		idx, err := queue.Enqueue(content)
-		if err != nil {
-			t.Error("Enqueue failed with err:", err)
-		}
+		So(err, ShouldBeNil)
 
-		if idx != int64(i) {
-			t.Error("Error enqueue index, current is", idx, " expected is", i)
-		}
+		So(idx, ShouldEqual, i)
 	}
 }
 
@@ -563,36 +562,21 @@ func dequeue(queue Queue, expectContent []byte, expectSize int, t *testing.T) {
 	for i := 0; i < expectSize; i++ {
 		idx, bb, err := queue.Dequeue()
 
-		if err != nil {
-			t.Error("Dequeue failed with err:", err)
-			continue
-		}
-
-		if idx == -1 {
-			t.Error("Error enqueue index, current is -1")
-			continue
-		}
+		So(err, ShouldBeNil)
+		So(idx, ShouldNotEqual, -1)
 		count++
-		if strings.Compare(string(expectContent), string(bb)) != 0 {
-			t.Error("Dequeue error with unexcept message from queue, expect is", string(expectContent), "but actually is", string(bb))
-		}
+		So(expectContent, ShouldResemble, bb)
 	}
-	if count != expectSize {
-		t.Error("Error dequeue count expect size is ", expectSize, ", but acutal is ", count)
-	}
+
+	So(count, ShouldEqual, expectSize)
 
 }
 
 func dequeueEmpty(queue Queue, t *testing.T) {
 	idx, _, err := queue.Dequeue()
 
-	if err != nil {
-		t.Error("Met errors on dequeue action from an empty file queue =>", err)
-	}
-
-	if idx != -1 {
-		t.Error("Empty queue dequeue index must return -1, but actually is ", idx)
-	}
+	So(err, ShouldBeNil)
+	So(idx, ShouldEqual, -1)
 }
 
 func clearFiles(path string, queueName string) {

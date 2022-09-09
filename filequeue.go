@@ -158,6 +158,16 @@ func (q *FileQueue) Status() *QueueFilesStatus {
 
 }
 
+// NewAndOpenFileQueue inital FileQueue and Open by target directory and queue name
+func NewAndOpenFileQueue(dir string, queueName string, options *Options) (IOQueue, error) {
+	fileQueue := &FileQueue{}
+	err := fileQueue.Open(dir, queueName, options)
+	if err != nil {
+		return nil, err
+	}
+	return fileQueue, nil
+}
+
 func (q *FileQueue) status(frontIndex, currentIndexPageIndex, currentDataPageIndex int64) *QueueFilesStatus {
 	result := QueueFilesStatus{FrontIndex: frontIndex, HeadIndex: q.headIndex, TailIndex: q.tailIndex,
 		HeadDataPageIndex: q.headDataPageIndex, HeadDataItemOffset: q.headDataItemOffset}
@@ -815,11 +825,7 @@ func (q *FileQueue) doLoopSubscribe() {
 
 func (q *FileQueue) autoGC() {
 	ticker := time.NewTicker(time.Second * time.Duration(q.options.AutoGCBySeconds))
-	q.autoGCQuit = make(chan int)
-	var wg sync.WaitGroup
-	wg.Add(1)
 	go func() {
-		defer wg.Done()
 		for {
 			select {
 			case <-ticker.C:
