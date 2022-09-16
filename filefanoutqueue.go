@@ -333,10 +333,10 @@ func (q *FileFanoutQueue) doSubscribe(index int64, data []byte, err error) {
 }
 
 func (q *FileFanoutQueue) doLoopSubscribe(fanoutID int64, subscriber func(int64, []byte, error)) {
-	if subscriber == nil {
-		return
-	}
 	for {
+		if subscriber == nil {
+			return
+		}
 		index, bb, err := q.Dequeue(fanoutID)
 		if bb == nil || len(bb) == 0 {
 			break // queue is empty
