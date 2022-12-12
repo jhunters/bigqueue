@@ -138,6 +138,10 @@ func (q *FileFanoutQueue) Dequeue(fanoutID int64) (int64, []byte, error) {
 		return -1, nil, err
 	}
 
+	if q.IsEmpty(fanoutID) {
+		return -1, nil, nil
+	}
+
 	index, err := qf.updateQueueFrontIndex(1)
 	if err != nil {
 		return -1, nil, err
@@ -224,6 +228,8 @@ func (q *FileFanoutQueue) Subscribe(fanoutID int64, fn func(int64, []byte, error
 	if qf.subscriber != nil {
 		return ErrSubscribeExistErr
 	}
+
+	q.doLoopSubscribe(fanoutID, fn)
 
 	qf.subscriber = fn
 

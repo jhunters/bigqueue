@@ -229,6 +229,8 @@ func TestFanoutQueueSubscribe(t *testing.T) {
 	clearFiles(path, "fanoutqueue")
 	fanoutID := int64(100)
 	fanoutID1 := int64(101)
+	clearFrontIndexFiles(path, "fanoutqueue", fanoutID)
+	clearFrontIndexFiles(path, "fanoutqueue", fanoutID1)
 
 	defer clearFrontIndexFiles(path, "fanoutqueue", fanoutID)
 	defer clearFrontIndexFiles(path, "fanoutqueue", fanoutID1)
@@ -245,14 +247,17 @@ func TestFanoutQueueSubscribe(t *testing.T) {
 		fanoutIDCount1, fanoutIDCount2 := 0, 0
 		count := 10
 
-		fq.Subscribe(fanoutID, func(index int64, data []byte, err error) {
-			fanoutIDCount1++
-		})
-
-		for i := 0; i < count; i++ {
+		for i := 0; i < 10; i++ {
 			_, err = fq.Enqueue([]byte("hello world" + strconv.Itoa(i)))
 			So(err, ShouldBeNil)
 		}
+		for i := 0; i < 5; i++ {
+			fq.Dequeue(fanoutID)
+		}
+
+		fq.Subscribe(fanoutID, func(index int64, data []byte, err error) {
+			fanoutIDCount1++
+		})
 
 		fq.Subscribe(fanoutID1, func(index int64, data []byte, err error) {
 			fanoutIDCount2++
@@ -260,7 +265,7 @@ func TestFanoutQueueSubscribe(t *testing.T) {
 
 		time.Sleep(time.Duration(3) * time.Second)
 
-		So(fanoutIDCount1, ShouldEqual, count)
+		So(fanoutIDCount1, ShouldEqual, 5)
 		So(fanoutIDCount2, ShouldEqual, count)
 	})
 

@@ -403,9 +403,7 @@ func TestFileQueue_Status(t *testing.T) {
 		var queue = new(FileQueue)
 
 		err := queue.Open(path, "testqueue", nil)
-		if err != nil {
-			t.Error(err)
-		}
+		So(err, ShouldBeNil)
 		defer queue.Close()
 		defer clearFiles(path, "testqueue")
 
@@ -532,6 +530,54 @@ func TestFileQueue_PeekPagination(t *testing.T) {
 			So(string(data[1]), ShouldEqual, "hello matthew 3")
 			So(len(indexs), ShouldEqual, 2)
 		})
+
+	})
+}
+
+func TestMultiGoroutinesEnqueueDequeue(t *testing.T) {
+	path := Tempfile()
+	clearFiles(path, "testqueue")
+	defer clearFiles(path, "testqueue")
+
+	enqueueResult := make(chan int, 10)
+	dequeueResult := make(chan int, 10)
+
+	Convey("TestMultiGoroutinesEnqueueDequeue", t, func() {
+		var queue = new(FileQueue)
+		err := queue.Open(path, "testqueue", nil)
+		So(err, ShouldBeNil)
+		defer queue.Close()
+
+		syncEnqueu := func(q Queue) {
+			q.Enqueue([]byte{1, 2})
+			enqueueResult <- 0
+		}
+		for i := 0; i < 10; i++ {
+			go syncEnqueu(queue)
+		}
+
+		syncDequeu := func(q Queue) {
+			q.Dequeue()
+			dequeueResult <- 0
+		}
+		for i := 0; i < 10; i++ {
+			go syncDequeu(queue)
+		}
+
+		enqueueSize := 0
+		dequeueSize := 0
+		for {
+			select {
+			case <-enqueueResult:
+				enqueueSize++
+			case <-dequeueResult:
+				dequeueSize++
+			}
+
+			if enqueueSize == 10 && dequeueSize == 10 {
+				return
+			}
+		}
 
 	})
 }
