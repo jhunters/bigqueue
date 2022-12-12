@@ -3,7 +3,6 @@ package bigqueue
 import (
 	"fmt"
 	"strconv"
-	"strings"
 	"sync"
 	"testing"
 	"time"
