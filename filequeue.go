@@ -804,10 +804,10 @@ func (q *FileQueue) changeSubscribeStatusForce(s bool) {
 
 func (q *FileQueue) doLoopSubscribe() {
 	for {
-		if q.subscriber == nil {
-			return
-		}
 		for {
+			if q.subscriber == nil {
+				return
+			}
 			index, bb, err := q.Dequeue()
 			if bb == nil {
 				break // queue is empty
