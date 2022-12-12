@@ -305,7 +305,7 @@ func TestFileQueue_FreeSubscribe(t *testing.T) {
 	clearFiles(path, "testqueue")
 	defer clearFiles(path, "testqueue")
 
-	Convey("TestFileQueue_Subscribe", t, func() {
+	Convey("TestFileQueue_FreeSubscribe", t, func() {
 
 		i := 0
 		var queue = new(FileQueue)
@@ -334,36 +334,38 @@ func TestFileQueue_FreeSubscribe(t *testing.T) {
 func TestFileQueue_FreeSubscribe_MidCycle(t *testing.T) {
 	path := Tempfile()
 	clearFiles(path, "testqueue")
-	i := 0
-	var queue = new(FileQueue)
-
-	err := queue.Open(path, "testqueue", nil)
-
-	var wg sync.WaitGroup
-	wg.Add(5)
-
-	queue.Subscribe(func(index int64, bb []byte, err error) {
-		defer wg.Done()
-		i++
-		if i == 5 {
-			queue.FreeSubscribe()
-		}
-	})
-
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer queue.Close()
 	defer clearFiles(path, "testqueue")
 
-	sz := 10
-	doEnqueue(queue, []byte("hello xiemalin中文"), sz, t)
+	Convey("TestFileQueue_FreeSubscribe_MidCycle", t, func() {
+		i := 0
+		var queue = new(FileQueue)
 
-	wg.Wait()
+		err := queue.Open(path, "testqueue", nil)
 
-	if queue.Size() != 5 {
-		t.Error("remaining queue size should be 5,  but actually is ", i)
-	}
+		var wg sync.WaitGroup
+		wg.Add(5)
+
+		queue.Subscribe(func(index int64, bb []byte, err error) {
+			defer wg.Done()
+			i++
+			if i == 5 {
+				queue.FreeSubscribe()
+			}
+		})
+
+		if err != nil {
+			fmt.Println(err)
+		}
+		defer queue.Close()
+
+		sz := 10
+		doEnqueue(queue, []byte("hello xiemalin中文"), sz, t)
+
+		wg.Wait()
+
+		So(queue.Size(), ShouldEqual, 5)
+	})
+
 }
 
 // TestFileQueue_PeekAll
