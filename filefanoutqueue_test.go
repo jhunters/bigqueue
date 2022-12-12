@@ -29,7 +29,7 @@ func TestFanoutQueueOpenTwice(t *testing.T) {
 	path := Tempfile()
 	defer clearFiles(path, "fanoutqueue")
 
-	Convey("TestFanoutQueueOpen", t, func() {
+	Convey("TestFanoutQueueOpenTwice", t, func() {
 
 		fq := FileFanoutQueue{}
 		err := fq.Open(path, "fanoutqueue", nil)
@@ -48,7 +48,7 @@ func TestFanoutQueueIsEmpty(t *testing.T) {
 	clearFiles(path, "fanoutqueue")
 	defer clearFiles(path, "fanoutqueue")
 
-	Convey("TestFanoutQueueOpen", t, func() {
+	Convey("TestFanoutQueueIsEmpty", t, func() {
 
 		fanoutID := int64(100)
 		defer clearFrontIndexFiles(path, "fanoutqueue", fanoutID)
@@ -70,7 +70,7 @@ func TestFanoutQueueSize(t *testing.T) {
 	clearFiles(path, "fanoutqueue")
 	defer clearFiles(path, "fanoutqueue")
 
-	Convey("TestFanoutQueueOpen", t, func() {
+	Convey("TestFanoutQueueSize", t, func() {
 		fanoutID := int64(100)
 		defer clearFrontIndexFiles(path, "fanoutqueue", fanoutID)
 
@@ -93,7 +93,7 @@ func TestFanoutQueueEnqueue(t *testing.T) {
 	defer clearFrontIndexFiles(path, "fanoutqueue", fanoutID)
 	defer clearFiles(path, "fanoutqueue")
 
-	Convey("TestFanoutQueueOpen", t, func() {
+	Convey("TestFanoutQueueEnqueue", t, func() {
 		fq := FileFanoutQueue{}
 		err := fq.Open(path, "fanoutqueue", nil)
 
@@ -129,7 +129,7 @@ func TestFanoutQueueEnqueueDequeue(t *testing.T) {
 	defer clearFrontIndexFiles(path, "fanoutqueue", fanoutID1)
 	defer clearFiles(path, "fanoutqueue")
 
-	Convey("TestFanoutQueueOpen", t, func() {
+	Convey("TestFanoutQueueEnqueueDequeue", t, func() {
 		fq := FileFanoutQueue{}
 		err := fq.Open(path, "fanoutqueue", nil)
 
@@ -158,7 +158,7 @@ func TestFanoutQueueEnqueuePeek(t *testing.T) {
 	defer clearFrontIndexFiles(path, "fanoutqueue", fanoutID1)
 	defer clearFiles(path, "fanoutqueue")
 
-	Convey("TestFanoutQueueOpen", t, func() {
+	Convey("TestFanoutQueueEnqueuePeek", t, func() {
 
 		fq := FileFanoutQueue{}
 		err := fq.Open(path, "fanoutqueue", nil)
@@ -197,7 +197,7 @@ func TestFanoutQueueSkip(t *testing.T) {
 	defer clearFrontIndexFiles(path, "fanoutqueue", fanoutID1)
 	defer clearFiles(path, "fanoutqueue")
 
-	Convey("TestFanoutQueueOpen", t, func() {
+	Convey("TestFanoutQueueSkip", t, func() {
 		fq := FileFanoutQueue{}
 		err := fq.Open(path, "fanoutqueue", nil)
 
@@ -234,7 +234,7 @@ func TestFanoutQueueSubscribe(t *testing.T) {
 	defer clearFrontIndexFiles(path, "fanoutqueue", fanoutID1)
 	defer clearFiles(path, "fanoutqueue")
 
-	Convey("TestFanoutQueueOpen", t, func() {
+	Convey("TestFanoutQueueSubscribe", t, func() {
 
 		fq := FileFanoutQueue{}
 		err := fq.Open(path, "fanoutqueue", nil)

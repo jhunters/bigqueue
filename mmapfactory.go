@@ -28,13 +28,14 @@ type DBFactory struct {
 }
 
 func (f *DBFactory) acquireDB(index int64) (*DB, error) {
+	// add map lock
+	f.lock.Lock()
 	db := f.dbMap[index]
 	if db != nil {
+		f.lock.Unlock()
 		return db, nil
 	}
 
-	// add map lock
-	f.lock.Lock()
 	lock := f.lockMap[index]
 	if lock == nil {
 		lock = &(sync.Mutex{})

@@ -812,7 +812,9 @@ func (q *FileQueue) doLoopSubscribe() {
 			if bb == nil {
 				break // queue is empty
 			}
-			q.subscriber(index, bb, err)
+			if q.subscriber != nil {
+				q.subscriber(index, bb, err)
+			}
 		}
 
 		loop := <-q.enqueueChan
