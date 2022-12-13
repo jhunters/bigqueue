@@ -229,9 +229,12 @@ func (q *FileFanoutQueue) Subscribe(fanoutID int64, fn func(int64, []byte, error
 		return ErrSubscribeExistErr
 	}
 
-	q.doLoopSubscribe(fanoutID, fn)
+	// do subsrcibe by async way
+	go func() {
+		q.doLoopSubscribe(fanoutID, fn)
 
-	qf.subscriber = fn
+		qf.subscriber = fn
+	}()
 
 	return nil
 }

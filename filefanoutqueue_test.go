@@ -252,7 +252,7 @@ func TestFanoutQueueSubscribe(t *testing.T) {
 			So(err, ShouldBeNil)
 		}
 		for i := 0; i < 5; i++ {
-			fq.Dequeue(fanoutID)
+			fq.Dequeue(fanoutID) // fanoutID dequeue 5 elements directly
 		}
 
 		fq.Subscribe(fanoutID, func(index int64, data []byte, err error) {
