@@ -23,8 +23,9 @@ type DB struct {
 	// syscall.MAP_POPULATE on Linux 2.6.23+ for sequential read-ahead.
 	MmapFlags int
 
-	path string
-	file *os.File
+	path    string
+	file    *os.File
+	dataref []byte // mmap'ed readonly, write throws SEGV
 
 	data *[maxMapSize]byte
 
