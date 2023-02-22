@@ -3,6 +3,7 @@ package bigqueue
 import (
 	"errors"
 	"os"
+	"path/filepath"
 	"strconv"
 	"sync"
 )
@@ -67,7 +68,7 @@ func (q *FileFanoutQueue) Open(dir string, queueName string, options *Options) e
 	}
 	q.options = options
 
-	q.path = dir + "/" + queueName
+	q.path = filepath.Join(dir, queueName)
 
 	q.frontIndexMap = make(map[int64]*QueueFront)
 
@@ -278,7 +279,7 @@ func (q *FileFanoutQueue) getQueueFront(fanoutID int64) (*QueueFront, error) {
 
 func (q *QueueFront) open(path string) error {
 
-	frontFilePath := path + "/" + FanoutFrontFileName + strconv.Itoa(int(q.fanoutID)) + "/"
+	frontFilePath := filepath.Join(path, FanoutFrontFileName+strconv.Itoa(int(q.fanoutID)))
 	err := os.MkdirAll(frontFilePath, os.ModeDir)
 	if err != nil {
 		return err
@@ -286,7 +287,7 @@ func (q *QueueFront) open(path string) error {
 
 	// create index file
 	q.fanoutDatafile = &DB{
-		path:            frontFilePath + GetFileName(filePrefix, fileSuffix, q.fanoutID),
+		path:            filepath.Join(frontFilePath, GetFileName(filePrefix, fileSuffix, q.fanoutID)),
 		InitialMmapSize: defaultFrontPageSize,
 		opened:          true,
 	}
@@ -321,10 +322,7 @@ func (q *QueueFront) updateQueueFrontIndex(count int64) (int64, error) {
 	q.frontIndex = nextQueueFrontIndex
 
 	bb := IntToBytes(q.frontIndex)
-	for idx, b := range bb {
-		q.fanoutDatafile.data[idx] = b
-
-	}
+	copy(q.fanoutDatafile.data[:], bb)
 
 	return queueFrontIndex, nil
 }
@@ -347,7 +345,7 @@ func (q *FileFanoutQueue) doLoopSubscribe(fanoutID int64, subscriber func(int64,
 			return
 		}
 		index, bb, err := q.Dequeue(fanoutID)
-		if bb == nil || len(bb) == 0 {
+		if len(bb) == 0 {
 			break // queue is empty
 		}
 		subscriber(index, bb, err)

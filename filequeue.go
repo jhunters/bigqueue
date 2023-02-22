@@ -6,6 +6,7 @@ import (
 	"errors"
 	"log"
 	"os"
+	"path/filepath"
 	"sync"
 	"time"
 )
@@ -237,7 +238,7 @@ func (q *FileQueue) Open(dir string, queueName string, options *Options) error {
 	q.options.itemsPerPage = 1 << uint(q.options.IndexItemsPerPage)
 	q.options.indexPageSize = defaultIndexItemLen * q.options.itemsPerPage
 
-	path := dir + "/" + queueName
+	path := filepath.Join(dir, queueName)
 
 	err := os.MkdirAll(path, os.ModeDir)
 	if err != nil {
@@ -261,7 +262,7 @@ func (q *FileQueue) Open(dir string, queueName string, options *Options) error {
 	}
 
 	dataDBFactory := DBFactory{
-		filePath:        q.path + "/" + DataFileName,
+		filePath:        filepath.Join(q.path, DataFileName),
 		filePrefix:      filePrefix,
 		fileSuffix:      fileSuffix,
 		lockMap:         make(map[int64]*sync.Mutex),
@@ -271,7 +272,7 @@ func (q *FileQueue) Open(dir string, queueName string, options *Options) error {
 	q.dataFile = &dataDBFactory
 
 	indexDBFactory := DBFactory{
-		filePath:        q.path + "/" + IndexFileName,
+		filePath:        filepath.Join(q.path, IndexFileName),
 		filePrefix:      filePrefix,
 		fileSuffix:      fileSuffix,
 		lockMap:         make(map[int64]*sync.Mutex),
@@ -584,10 +585,7 @@ func (q *FileQueue) updateQueueFrontIndex() (int64, error) {
 	q.frontIndex = nextQueueFrontIndex
 
 	bb := IntToBytes(q.frontIndex)
-	for idx, b := range bb {
-		q.frontFile.data[idx] = b
-
-	}
+	copy(q.frontFile.data[:], bb)
 
 	return queueFrontIndex, nil
 }
@@ -595,7 +593,7 @@ func (q *FileQueue) updateQueueFrontIndex() (int64, error) {
 func (q *FileQueue) initFrontFile() error {
 	// create index file
 	q.frontFile = &DB{
-		path:            q.path + "/" + FrontFileName + "/" + GetFileName(filePrefix, fileSuffix, 0),
+		path:            filepath.Join(q.path, FrontFileName, GetFileName(filePrefix, fileSuffix, 0)),
 		InitialMmapSize: defaultFrontPageSize,
 		opened:          true,
 	}
@@ -612,7 +610,7 @@ func (q *FileQueue) initFrontFile() error {
 func (q *FileQueue) initMetaFile() error {
 	// create index file
 	q.metaFile = &DB{
-		path:            q.path + "/" + MetaFileName + "/" + GetFileName(filePrefix, fileSuffix, 0),
+		path:            filepath.Join(q.path, MetaFileName, GetFileName(filePrefix, fileSuffix, 0)),
 		InitialMmapSize: defaultMetaPageSize,
 		opened:          true,
 	}
@@ -671,25 +669,25 @@ func (q *FileQueue) getIndexItemArray(index int64) ([]byte, error) {
 }
 
 func (q *FileQueue) initDirs() error {
-	indexFilePath := q.path + "/" + IndexFileName
+	indexFilePath := filepath.Join(q.path, IndexFileName)
 	err := os.MkdirAll(indexFilePath, os.ModeDir)
 	if err != nil {
 		return err
 	}
 
-	dataFilePath := q.path + "/" + DataFileName
+	dataFilePath := filepath.Join(q.path, DataFileName)
 	err = os.MkdirAll(dataFilePath, os.ModeDir)
 	if err != nil {
 		return err
 	}
 
-	metaFilePath := q.path + "/" + MetaFileName
+	metaFilePath := filepath.Join(q.path, MetaFileName)
 	err = os.MkdirAll(metaFilePath, os.ModeDir)
 	if err != nil {
 		return err
 	}
 
-	frontFilePath := q.path + "/" + FrontFileName
+	frontFilePath := filepath.Join(q.path, FrontFileName)
 	err = os.MkdirAll(frontFilePath, os.ModeDir)
 	if err != nil {
 		return err
@@ -731,7 +729,7 @@ func (q *FileQueue) Close() error {
 	return nil
 }
 
-//Gc Delete all used data files to free disk space.
+// Gc Delete all used data files to free disk space.
 //
 // BigQueue will persist enqueued data in disk files, these data files will remain even after
 // the data in them has been dequeued later, so your application is responsible to periodically call

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
@@ -65,7 +66,7 @@ func (f *DBFactory) acquireDB(index int64) (*DB, error) {
 }
 
 func (f *DBFactory) getFilePath(index int64) string {
-	return f.filePath + "/" + GetFileName(f.filePrefix, f.fileSuffix, index)
+	return filepath.Join(f.filePath, GetFileName(f.filePrefix, f.fileSuffix, index))
 }
 
 // Close all data files
