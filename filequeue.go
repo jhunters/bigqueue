@@ -240,7 +240,7 @@ func (q *FileQueue) Open(dir string, queueName string, options *Options) error {
 
 	path := filepath.Join(dir, queueName)
 
-	err := os.MkdirAll(path, os.ModeDir)
+	err := os.MkdirAll(path, defaultFileMode)
 	if err != nil {
 		return err
 	}
@@ -670,25 +670,25 @@ func (q *FileQueue) getIndexItemArray(index int64) ([]byte, error) {
 
 func (q *FileQueue) initDirs() error {
 	indexFilePath := filepath.Join(q.path, IndexFileName)
-	err := os.MkdirAll(indexFilePath, os.ModeDir)
+	err := os.MkdirAll(indexFilePath, defaultFileMode)
 	if err != nil {
 		return err
 	}
 
 	dataFilePath := filepath.Join(q.path, DataFileName)
-	err = os.MkdirAll(dataFilePath, os.ModeDir)
+	err = os.MkdirAll(dataFilePath, defaultFileMode)
 	if err != nil {
 		return err
 	}
 
 	metaFilePath := filepath.Join(q.path, MetaFileName)
-	err = os.MkdirAll(metaFilePath, os.ModeDir)
+	err = os.MkdirAll(metaFilePath, defaultFileMode)
 	if err != nil {
 		return err
 	}
 
 	frontFilePath := filepath.Join(q.path, FrontFileName)
-	err = os.MkdirAll(frontFilePath, os.ModeDir)
+	err = os.MkdirAll(frontFilePath, defaultFileMode)
 	if err != nil {
 		return err
 	}
