@@ -621,7 +621,7 @@ func (q *FileQueue) initMetaFile() error {
 	}
 
 	q.headIndex = BytesToInt(q.metaFile.data[:8])
-	q.tailIndex = BytesToInt(q.metaFile.data[9:16])
+	q.tailIndex = BytesToInt(q.metaFile.data[8:16])
 
 	Assert(q.headIndex >= 0, "head index can not be negetive number. value is %v", q.headIndex)
 	Assert(q.tailIndex >= 0, "tail index can not be negetive number. value is %v", q.tailIndex)
@@ -768,7 +768,7 @@ func (q *FileQueue) Gc() error {
 	q.tailIndex = frontIndex
 
 	// update to mapped data
-	copy(q.metaFile.data[9:16], IntToBytes(q.tailIndex))
+	copy(q.metaFile.data[8:16], IntToBytes(q.tailIndex))
 
 	return nil
 }
