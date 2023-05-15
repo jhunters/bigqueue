@@ -767,6 +767,9 @@ func (q *FileQueue) Gc() error {
 
 	q.tailIndex = frontIndex
 
+	// update to mapped data
+	copy(q.metaFile.data[9:16], IntToBytes(q.tailIndex))
+
 	return nil
 }
 
