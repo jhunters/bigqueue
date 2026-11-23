@@ -769,3 +769,94 @@ func TestFileQueue_PeekRange(t *testing.T) {
 
 	})
 }
+
+// TestFileQueue_ReopenEmptyKeepsHeadPage: an empty queue reopened after its
+// items reached a later data page goes on from that page, so the first Gc
+// after the reopen does not remove the page its new items are on.
+func TestFileQueue_ReopenEmptyKeepsHeadPage(t *testing.T) {
+	path := Tempfile()
+	clearFiles(path, "testqueue")
+	defer clearFiles(path, "testqueue")
+
+	Convey("TestFileQueue_ReopenEmptyKeepsHeadPage", t, func() {
+		options := func() *Options {
+			return &Options{DataPageSize: 128, IndexItemsPerPage: 4}
+		}
+		content := []byte("0123456789012345678901234567890123456789") // 40 B: 3 items per page
+		var queue = new(FileQueue)
+		So(queue.Open(path, "testqueue", options()), ShouldBeNil)
+		enqueue(queue, content, 7, t)
+		dequeue(queue, content, 7, t)
+		So(queue.Gc(), ShouldBeNil)
+		So(queue.headDataPageIndex, ShouldEqual, 2)
+		So(queue.Close(), ShouldBeNil)
+
+		queue = new(FileQueue)
+		So(queue.Open(path, "testqueue", options()), ShouldBeNil)
+		defer queue.Close()
+		So(queue.IsEmpty(), ShouldBeTrue)
+		So(queue.headDataPageIndex, ShouldEqual, 2)
+
+		fresh := []byte("after the reopen")
+		_, err := queue.Enqueue(fresh)
+		So(err, ShouldBeNil)
+		So(queue.Gc(), ShouldBeNil)
+		data, _, err := queue.PeekRange(0, 1)
+		So(err, ShouldBeNil)
+		So(data, ShouldResemble, [][]byte{fresh})
+	})
+}
+
+// TestFileQueue_GcKeepsHeadPage: a queue written before the reopen fix holds
+// its head on page 0 below the page of the last dequeued item. Gc leaves the
+// head page alone.
+func TestFileQueue_GcKeepsHeadPage(t *testing.T) {
+	path := Tempfile()
+	clearFiles(path, "testqueue")
+	defer clearFiles(path, "testqueue")
+
+	Convey("TestFileQueue_GcKeepsHeadPage", t, func() {
+		options := func() *Options {
+			return &Options{DataPageSize: 128, IndexItemsPerPage: 4}
+		}
+		content := []byte("0123456789012345678901234567890123456789")
+		var queue = new(FileQueue)
+		So(queue.Open(path, "testqueue", options()), ShouldBeNil)
+		enqueue(queue, content, 7, t)
+		dequeue(queue, content, 7, t)
+		So(queue.Gc(), ShouldBeNil)
+		So(queue.Close(), ShouldBeNil)
+
+		queue = new(FileQueue)
+		So(queue.Open(path, "testqueue", options()), ShouldBeNil)
+		// The layout the old Open left behind: head on page 0.
+		queue.headDataPageIndex, queue.headDataItemOffset = 0, 0
+		fresh := []byte("written on page 0")
+		_, err := queue.Enqueue(fresh)
+		So(err, ShouldBeNil)
+		So(queue.Close(), ShouldBeNil)
+
+		queue = new(FileQueue)
+		So(queue.Open(path, "testqueue", options()), ShouldBeNil)
+		defer queue.Close()
+		So(queue.headDataPageIndex, ShouldEqual, 0)
+		So(queue.Gc(), ShouldBeNil)
+		data, _, err := queue.PeekRange(0, 1)
+		So(err, ShouldBeNil)
+		So(data, ShouldResemble, [][]byte{fresh})
+
+		// The head climbs past the front's page 2 while the front stays:
+		// every page from the first unread item up holds unread items.
+		want := [][]byte{fresh}
+		for n := 1; n <= 12; n++ {
+			_, err := queue.Enqueue(content)
+			So(err, ShouldBeNil)
+			want = append(want, content)
+			So(queue.Gc(), ShouldBeNil)
+			data, _, err = queue.PeekRange(0, int64(n+1))
+			So(err, ShouldBeNil)
+			So(data, ShouldResemble, want)
+		}
+		So(queue.headDataPageIndex, ShouldBeGreaterThan, 2)
+	})
+}

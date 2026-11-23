@@ -677,7 +677,9 @@ func (q *FileQueue) initMetaFile() error {
 }
 
 func (q *FileQueue) initDataPageIndex() error {
-	if q.IsEmpty() {
+	// Only a queue that never held an item starts on data page 0: an empty one
+	// goes on after its last item, or Gc would remove the page it restarts on.
+	if q.headIndex == 0 {
 		q.headDataPageIndex = 0
 		q.headDataItemOffset = 0
 		return nil
@@ -786,7 +788,9 @@ func (q *FileQueue) Close() error {
 func (q *FileQueue) Gc() error {
 	q.gcLock.Lock()
 	defer q.gcLock.Unlock()
+	q.queueFrontWriteLock.Lock()
 	frontIndex := q.frontIndex
+	q.queueFrontWriteLock.Unlock()
 
 	if frontIndex == 0 {
 		return nil
@@ -806,6 +810,25 @@ func (q *FileQueue) Gc() error {
 	}
 
 	dataPageIndex := BytesToInt(bb[:8])
+	// Nothing at or above the page of the first unconsumed item goes: a queue
+	// an older build reopened empty holds it below the last consumed one.
+	// A Skip since the front was read only makes front a consumed item,
+	// which caps the removal lower than needed; the next Gc catches up.
+	q.enqueueLock.Lock()
+	front := frontIndex + 1
+	var fb []byte
+	if !q.isEmpty(front) {
+		fb, err = q.getIndexItemArray(front)
+	}
+	q.enqueueLock.Unlock()
+	if err != nil {
+		return err
+	}
+	if fb != nil {
+		if page := BytesToInt(fb[:8]); page < dataPageIndex {
+			dataPageIndex = page
+		}
+	}
 	if indexPageIndex > 0 {
 		q.indexFile.removeBeforeIndex(indexPageIndex)
 	}
